@@ -7,13 +7,13 @@ import java.util.List;
 /**
  * Created by paballo on 2017/02/20.
  */
-public interface VacancyService {
+public interface VacancyPersistenceService {
 
-    void createOrUpdateVacancy(Vacancy vacancy);
+    void persistVacancy(Vacancy vacancy);
 
     void deleteVacancy(String vacancyId);
 
     void deleteVacancies(String criteriaValue);
 
-    boolean documentExists(String website);
+
 }

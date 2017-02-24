@@ -29,11 +29,15 @@ public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
 
-    @Autowired
     private Client elasticSearchClient;
 
     private static final String INDEX = "vacancies";
     private static final String DOCUMENT_TYPE = "vacancy";
+
+    @Autowired
+    public SearchServiceImpl(Client elasticSearchClient){
+        this.elasticSearchClient = elasticSearchClient;
+    }
 
     @PostConstruct
     public void init() {
@@ -45,6 +49,7 @@ public class SearchServiceImpl implements SearchService {
             createIndexRequestBuilder.execute().actionGet();
         }
     }
+
 
     @Override
     public void index(String id, Vacancy vacancy) {
@@ -79,11 +84,9 @@ public class SearchServiceImpl implements SearchService {
             public void onResponse(DeleteResponse deleteResponse) {
                 logger.debug("Document with id {} deleted", id);
             }
-
             @Override
             public void onFailure(Exception e) {
                 logger.debug("Failed to remove Document with id {}", id);
-
             }
         });
     }
@@ -96,7 +99,6 @@ public class SearchServiceImpl implements SearchService {
                 public void onResponse(DeleteResponse deleteResponse) {
                     logger.debug("Document with id {} deleted", objectId.toHexString());
                 }
-
                 @Override
                 public void onFailure(Exception e) {
                     logger.debug("Failed to remove Document with id {}",objectId.toHexString());

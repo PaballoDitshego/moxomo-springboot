@@ -1,10 +1,7 @@
 package co.moxomo.tasks;
 
-import co.moxomo.crawlers.CareerJunction;
-import co.moxomo.crawlers.Careers24;
-import co.moxomo.crawlers.JobVine;
-import co.moxomo.crawlers.PNet;
-import co.moxomo.services.VacancyService;
+import co.moxomo.crawlers.*;
+import co.moxomo.services.VacancyPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,18 +18,22 @@ import java.util.Calendar;
 @Component
 public class ScheduledTasks {
 
-    @Autowired
-    private VacancyService vacancyService;
-
+    private VacancyPersistenceService vacancyPersistenceService;
+    private PnetService pnet;
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
+    @Autowired
+    public ScheduledTasks(VacancyPersistenceService vacancyPersistenceService, PnetService pnet){
+        this.vacancyPersistenceService = vacancyPersistenceService;
+        this.pnet = pnet;
+    }
     @Scheduled(fixedRate = 14400000) //runs every 4 hours
     public void crawl(){
         logger.info("Crawl started.");
-        PNet.crawl();
-        CareerJunction.crawl();
-        Careers24.crawl();
-        JobVine.crawl();
+        pnet.crawl();
+    //    CareerJunction.crawl();
+    //    Careers24.crawl();
+    //    JobVine.crawl();
 
     }
 
@@ -43,7 +44,7 @@ public class ScheduledTasks {
         String advertDate = sdf.format(cal.getTime());
         try {
             cal.setTime(sdf.parse(advertDate));
-            vacancyService.deleteVacancies(String.valueOf(cal.getTime()));
+            vacancyPersistenceService.deleteVacancies(String.valueOf(cal.getTime()));
         } catch (ParseException e) {
             logger.error(e.getMessage());
         }

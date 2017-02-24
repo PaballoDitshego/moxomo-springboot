@@ -29,9 +29,9 @@ import java.util.Objects;
  */
 
 @Service
-public class VacancyServiceImpl implements VacancyService {
+public class VacancyPersistenceServiceImpl implements VacancyPersistenceService {
 
-    private static final Logger logger = LoggerFactory.getLogger(VacancyService.class);
+    private static final Logger logger = LoggerFactory.getLogger(VacancyPersistenceService.class);
 
     @Value("${db.name}")
     private String DB_NAME;
@@ -41,13 +41,18 @@ public class VacancyServiceImpl implements VacancyService {
 
     private final String ID = "_id";
 
-    @Autowired
     private MongoClient mongoClient;
 
-    @Autowired
+
     private SearchService searchService;
 
     private MongoDatabase database;
+
+    @Autowired
+    public VacancyPersistenceServiceImpl(MongoClient mongoClient, SearchService searchService){
+        this.mongoClient = mongoClient;
+        this.searchService = searchService;
+    }
 
 
     @PostConstruct
@@ -57,16 +62,18 @@ public class VacancyServiceImpl implements VacancyService {
     }
 
     @Override
-    public void createOrUpdateVacancy(Vacancy vacancy) {
+    public void persistVacancy(Vacancy vacancy) {
+        logger.info("Saving vacancy");
         Objects.requireNonNull(vacancy);
+        if(!documentExists(vacancy.getWebsite())) {
+            Document dbObject = createDBObject(vacancy);
+            database.getCollection(DB_TABLE).insertOne(dbObject);
+            ObjectId id = dbObject.getObjectId(ID);
 
-        Document dbObject = createDBObject(vacancy);
-        database.getCollection(DB_TABLE).insertOne(dbObject);
-        String id = dbObject.getString(ID);
-        if(Objects.nonNull(id)){
-            searchService.index(id, vacancy);
+            if (Objects.nonNull(id)) {
+                searchService.index(id.toHexString(), vacancy);
+            }
         }
-
     }
 
     @Override
@@ -99,14 +106,7 @@ public class VacancyServiceImpl implements VacancyService {
         logger.info("Deleted {} entries",deleteCount );
     }
 
-    @Override
-    public boolean documentExists(String website){
-        Objects.requireNonNull(website);
 
-        MongoCollection<Document> collection = database.getCollection(DB_TABLE);
-        Bson filter = Filters.eq("website", website);
-       return Objects.nonNull(collection.find(filter).first());
-    }
 
     private static Document createDBObject(Vacancy vacancy) {
         Objects.requireNonNull(vacancy);
@@ -130,11 +130,20 @@ public class VacancyServiceImpl implements VacancyService {
         return document;
     }
 
+    private boolean documentExists(String website){
+        Objects.requireNonNull(website);
+
+        MongoCollection<Document> collection = database.getCollection(DB_TABLE);
+        Bson filter = Filters.eq("website", website);
+        return Objects.nonNull(collection.find(filter).first());
+    }
 
     @PreDestroy
-    private void shutDown(){
+    public void shutDown(){
         mongoClient.close();
     }
+
+
 
 
 
