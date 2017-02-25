@@ -13,7 +13,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,8 +22,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-@Service
-public class PNet implements PnetService {
+@Component
+public class PNet{
 
 	private static HashSet<String> crawledUrls = new HashSet<String>();
 	private static HashSet<String> savedJobs = new HashSet<String>();
@@ -51,14 +51,8 @@ public class PNet implements PnetService {
 		//urlsToCrawl.add("http://www.pnet.co.za/5/employer-search.html");
 		//urlsToCrawl.add("http://www.pnet.co.za/jobs/all-jobs.html");
 
-		// Search until the number of found URLs reaches 2000
 		while (urlsToCrawl.iterator().hasNext() && crawledUrls.size() < 20000) {
-
-			// Get the URL
 			String url = urlsToCrawl.iterator().next();
-
-
-			// Remove the URL from the list of URLs to crawl
 			urlsToCrawl.remove(url);
 
 			if (url != null) {

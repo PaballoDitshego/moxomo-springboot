@@ -35,17 +35,11 @@ public class VacancyPersistenceServiceImpl implements VacancyPersistenceService 
 
     @Value("${db.name}")
     private String DB_NAME;
-
     @Value("{db.collection}")
     private String DB_TABLE;
-
     private final String ID = "_id";
-
     private MongoClient mongoClient;
-
-
     private SearchService searchService;
-
     private MongoDatabase database;
 
     @Autowired
@@ -54,16 +48,14 @@ public class VacancyPersistenceServiceImpl implements VacancyPersistenceService 
         this.searchService = searchService;
     }
 
-
     @PostConstruct
     public void init(){
         database = mongoClient.getDatabase(DB_NAME);
-
     }
 
     @Override
     public void persistVacancy(Vacancy vacancy) {
-        logger.info("Saving vacancy");
+        logger.debug("Saving vacancy");
         Objects.requireNonNull(vacancy);
         if(!documentExists(vacancy.getWebsite())) {
             Document dbObject = createDBObject(vacancy);
@@ -105,8 +97,6 @@ public class VacancyPersistenceServiceImpl implements VacancyPersistenceService 
         searchService.removeDocuments(toRemoveIds);
         logger.info("Deleted {} entries",deleteCount );
     }
-
-
 
     private static Document createDBObject(Vacancy vacancy) {
         Objects.requireNonNull(vacancy);

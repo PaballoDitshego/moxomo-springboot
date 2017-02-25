@@ -19,11 +19,11 @@ import java.util.Calendar;
 public class ScheduledTasks {
 
     private VacancyPersistenceService vacancyPersistenceService;
-    private PnetService pnet;
+    private PNet pnet;
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
     @Autowired
-    public ScheduledTasks(VacancyPersistenceService vacancyPersistenceService, PnetService pnet){
+    public ScheduledTasks(VacancyPersistenceService vacancyPersistenceService, PNet pnet){
         this.vacancyPersistenceService = vacancyPersistenceService;
         this.pnet = pnet;
     }
