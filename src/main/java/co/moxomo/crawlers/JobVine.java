@@ -146,7 +146,6 @@ public class JobVine implements Serializable {
 	}
 
 	private Vacancy createVacancy(String url) {
-
 		Vacancy vacancy = null;
 		String url_ = url.substring(0, url.lastIndexOf("/"));
 		String id = url_.substring(url_.lastIndexOf("/") + 1, url_.length())
