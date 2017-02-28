@@ -1,4 +1,3 @@
-machine:
    dependencies:
      post:
        - wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/5.2.1/elasticsearch-2.4.3.tar.gz
