@@ -2,7 +2,7 @@ machine:
   environment:
     _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
 
-  dependencies:
+dependencies:
      post:
        - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.2.1.tar.gz
        - tar -xvf elasticsearch-5.2.1.tar.gz
