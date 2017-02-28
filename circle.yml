@@ -1,6 +1,6 @@
    dependencies:
      post:
-       - wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/5.2.1/elasticsearch-2.4.3.tar.gz
+       - wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/5.2.1/elasticsearch-5.2.1tar.gz
        - tar -xvf elasticsearch-5.2.1.tar.gz
        - elasticsearch-5.2.1/bin/elasticsearch: {background: true}
        # Make sure that Elasticsearch is up before running tests:
