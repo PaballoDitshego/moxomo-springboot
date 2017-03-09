@@ -81,7 +81,7 @@ public class VacancyPersistenceServiceImpl implements VacancyPersistenceService 
 
     @Override
     public void deleteVacancies(String criteriaValue){
-        Objects.requireNonNull("advertDate", criteriaValue);
+        Objects.requireNonNull(criteriaValue);
 
         Bson filter = Filters.lt("closingDate", criteriaValue);
         FindIterable<Document> collection = database.getCollection(DB_TABLE).find(filter);

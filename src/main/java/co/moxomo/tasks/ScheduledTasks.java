@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by paballo on 2016/11/16.
@@ -30,12 +32,18 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 14400000) //runs every 4 hours
     public void crawl(){
         logger.info("Crawl started.");
-        pnet.crawl();
+
+            ExecutorService executor = Executors.newFixedThreadPool(5);
+            for (int i = 0; i < 3; i++) {
+                executor.execute(() -> pnet.crawl());
+            }
+            executor.shutdown();
+
+        }
+      //  pnet.crawl();
     //    CareerJunction.crawl();
     //    Careers24.crawl();
     //    JobVine.crawl();
-
-    }
 
     @Scheduled(fixedRate = 14400000)
     public void deleteExpired(){
