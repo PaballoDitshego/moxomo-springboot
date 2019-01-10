@@ -1,7 +1,7 @@
 package co.moxomo.services;
 
 import co.moxomo.model.Vacancy;
-import org.bson.types.ObjectId;
+//import org.bson.types.ObjectId;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface SearchService {
 
     void removeDocument(String id);
 
-    void removeDocuments(List<ObjectId> ids);
+   // void removeDocuments(List<ObjectId> ids);
 }

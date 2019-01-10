@@ -1,7 +1,7 @@
 package co.moxomo.tasks;
 
 import co.moxomo.crawlers.*;
-import co.moxomo.services.VacancyPersistenceService;
+import co.moxomo.services.VacancyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +20,13 @@ import java.util.concurrent.Executors;
 @Component
 public class ScheduledTasks {
 
-    private VacancyPersistenceService vacancyPersistenceService;
+    private VacancyService vacancyService;
     private PNet pnet;
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
-    @Autowired
-    public ScheduledTasks(VacancyPersistenceService vacancyPersistenceService, PNet pnet){
-        this.vacancyPersistenceService = vacancyPersistenceService;
+   @Autowired
+    public ScheduledTasks( PNet pnet){
+       // this.vacancyService = vacancyService;
         this.pnet = pnet;
     }
     @Scheduled(fixedRate = 14400000) //runs every 4 hours
@@ -52,7 +52,7 @@ public class ScheduledTasks {
         String advertDate = sdf.format(cal.getTime());
         try {
             cal.setTime(sdf.parse(advertDate));
-            vacancyPersistenceService.deleteVacancies(String.valueOf(cal.getTime()));
+        //    vacancyService.deleteVacancies(String.valueOf(cal.getTime()));
         } catch (ParseException e) {
             logger.error(e.getMessage());
         }

@@ -1,7 +1,7 @@
 package co.moxomo.crawlers;
 
 import co.moxomo.model.Vacancy;
-import co.moxomo.services.VacancyPersistenceService;
+import co.moxomo.services.VacancyService;
 import co.moxomo.utils.Categoriser;
 import co.moxomo.utils.Util;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +12,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,12 +31,12 @@ public class PNet {
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
             .getCanonicalName());
 
-    private VacancyPersistenceService vacancyPersistenceService;
+    private VacancyService vacancyService;
 
-    @Autowired
-    public PNet(VacancyPersistenceService vacancyPersistenceService) {
-        this.vacancyPersistenceService = vacancyPersistenceService;
-    }
+  /*  @Autowired
+    public PNet(VacancyService vacancyService) {
+        this.vacancyService = vacancyService;
+    }*/
 
     public void crawl() {
         crawl(PNET);
@@ -45,12 +44,15 @@ public class PNet {
 
     private void crawl(final String startUrl) {
 
+
         // Add the start URL to the list of URLs to crawl
         urlsToCrawl.add(startUrl);
         while (urlsToCrawl.iterator().hasNext() && crawledUrls.size() < 20000) {
             String url = urlsToCrawl.iterator().next();
+
+            logger.info("Crawling url {}", url);
             urlsToCrawl.remove(url);
-            if(url != null) {
+            if (url != null) {
                 Document doc = null;
                 try {
                     Connection.Response response = Jsoup
@@ -102,9 +104,12 @@ public class PNet {
 
                             }
                             String offerId = null;
+
+                            offerId = StringUtils.substringBetween(url.substring(url.lastIndexOf("--"), url.length()), "--", "-inline");
                             if (doc.getElementById("ApplyNowLink") != null) {
                                 if (doc.getElementById("ApplyNowLink").hasAttr(
                                         "href")) {
+
                                     offerId = doc
                                             .getElementById("ApplyNowLink")
                                             .attr("href");
@@ -115,7 +120,7 @@ public class PNet {
                                     }
                                 }
                             }
-                            if (offerId != null && category != null) {
+                            if (offerId != null) {
                                 Vacancy vacancy = new Vacancy();
                                 vacancy.setCategory(category);
                                 vacancy.setAd_id(offerId);
@@ -123,10 +128,11 @@ public class PNet {
                                 String address = "http://www.pnet.co.za/m/?event=OfferView&id="
                                         + offerId;
                                 vacancy.setWebsite(address);
-                                Vacancy vac = createVacancy(vacancy);
+                                Vacancy vac = null;
+                                logger.info(vacancy.toString());
                                 if (vac != null && vac.getAdvertDate() != null) {
                                     savedJobs.add(vac.getWebsite());
-                                    vacancyPersistenceService.persistVacancy(vac);
+                                    //   vacancyService.persistVacancy(vac);
                                 }
                             }
                         }
@@ -141,7 +147,8 @@ public class PNet {
         Objects.requireNonNull(vac);
 
         if (savedJobs.contains(vac.getWebsite())) {
-            return null;
+            logger.info("Already contains job");
+            //    return null;
         }
         try {
             Connection.Response response = Jsoup
@@ -154,12 +161,12 @@ public class PNet {
             if (response.statusCode() == 500) {
                 savedJobs.add(vac.getWebsite());
                 logger.error("Error  crawling {}", vac.getWebsite());
-                return null;
+                //    return null;
             }
             Document doc = response.parse();
             if (doc.hasClass("info-window error-page-not-found")) {
                 savedJobs.add(vac.getWebsite());
-                return null;
+                //    return null;
             }
             String logo = null;
             if (doc != null) {
@@ -194,7 +201,7 @@ public class PNet {
                 Date temp = null;
                 if (date == null) {
                     logger.error("Error  crawling {}", vac.getWebsite());
-                    return null;
+                    // return null;
                 }
                 try {
                     temp = sdf.parse(date);
@@ -210,7 +217,7 @@ public class PNet {
                 c.add(Calendar.DATE, -1);
                 if (temp == null || temp.before(c.getTime())
                         || Util.isAvailable(vac.getWebsite())) {
-                    return null;
+                    //  return null;
                 }
                 //SimpleDateFormat formatter = new SimpleDateFormat(
                 //	"MMM dd, yyyy hh:mm:ss a");
@@ -310,7 +317,7 @@ public class PNet {
                         || vac.getAdvertDate() == null
                         || vac.getDescription() == null) {
 
-                    return null;
+                    //  return null;
                 }
             }
         } catch (IOException e) {

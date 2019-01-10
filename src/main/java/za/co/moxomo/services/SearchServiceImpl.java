@@ -1,7 +1,7 @@
 package co.moxomo.services;
 
 import co.moxomo.model.Vacancy;
-import org.bson.types.ObjectId;
+//import org.bson.types.ObjectId;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -24,7 +24,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 /**
  * Created by paballo on 2017/02/20.
  */
-@Service
+//@Service
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
@@ -91,7 +91,7 @@ public class SearchServiceImpl implements SearchService {
         });
     }
 
-    @Override
+   /* @Override
     public void removeDocuments(List<ObjectId> ids) {
         for(ObjectId objectId: ids){
             elasticSearchClient.prepareDelete(INDEX, DOCUMENT_TYPE, objectId.toHexString()).execute(new ActionListener<DeleteResponse>() {
@@ -105,7 +105,7 @@ public class SearchServiceImpl implements SearchService {
                 }
             });
         }
-    }
+    }*/
 
     @PreDestroy
     private void shutDown() {
