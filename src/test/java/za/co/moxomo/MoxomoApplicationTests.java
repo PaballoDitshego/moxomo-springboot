@@ -1,4 +1,4 @@
-package co.moxomo;
+package za.co.moxomo;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

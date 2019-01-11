@@ -1,19 +1,17 @@
-package co.moxomo.crawlers;
+package za.co.moxomo.crawlers;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import co.moxomo.model.Vacancy;
-import co.moxomo.utils.Categoriser;
-import co.moxomo.utils.Util;
+import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.utils.Categoriser;
+import za.co.moxomo.utils.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -196,20 +194,10 @@ public class Careers24 {
 			category = "Customer Service";
 		}
 
-		category = Categoriser.getCategory(category);
 		
 
-		vacancy = new Vacancy();
-		vacancy.setCompany_name(company);
+	//	vacancy = new Vacancy();
 
-		vacancy.setImageUrl(logo);
-		vacancy.setDescription(description);
-		vacancy.setDuties(details);
-		vacancy.setCategory(category);
-		vacancy.setJob_title(title);
-		vacancy.setLocation(location);
-		vacancy.setProvince(location);
-		vacancy.setWebsite(url);
 		//vacancy.setAd_id(id);
 
 		SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
@@ -237,10 +225,10 @@ public class Careers24 {
 			return null;
 
 		}
-		vacancy.setAdvertDate(today);
+		/*vacancy.setAdvertDate(today);
 		c.add(Calendar.DATE, 33);
 		vacancy.setClosingDate(c.getTime());
-
+*/
 		return vacancy;
 		}
 		

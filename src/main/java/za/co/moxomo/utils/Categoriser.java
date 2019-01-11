@@ -1,4 +1,4 @@
-package co.moxomo.utils;
+package za.co.moxomo.utils;
 
 
 /**

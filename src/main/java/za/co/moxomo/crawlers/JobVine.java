@@ -1,4 +1,4 @@
-package co.moxomo.crawlers;
+package za.co.moxomo.crawlers;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import co.moxomo.model.Vacancy;
-import co.moxomo.utils.Categoriser;
-import co.moxomo.utils.Util;
+import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.utils.Categoriser;
+import za.co.moxomo.utils.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -209,8 +209,8 @@ public class JobVine implements Serializable {
 
 			Calendar c = Calendar.getInstance();
 			// c.add(Calendar.DATE, -2);
-			vacancy = new Vacancy();
-			vacancy.setAdvertDate(today);
+		//	vacancy = new Vacancy();
+		/*	vacancy.setAdvertDate(today);
 			c.add(Calendar.DATE, 33);
 			vacancy.setClosingDate(c.getTime());
 
@@ -222,13 +222,13 @@ public class JobVine implements Serializable {
 			vacancy.setAd_id(id);
 			vacancy.setCategory(category);
 			vacancy.setProvince(location);
-			vacancy.setJob_title(title);
+			vacancy.setJob_title(title);*/
 
-			if (title == null && category == null
+			/*if (title == null && category == null
 					&& vacancy.getAdvertDate() == null) {
 
 				return null;
-			}
+			}*/
 
 		} catch (IOException e) {
 			

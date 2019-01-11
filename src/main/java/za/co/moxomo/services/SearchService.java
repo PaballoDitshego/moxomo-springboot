@@ -1,18 +1,17 @@
-package co.moxomo.services;
+package za.co.moxomo.services;
 
-import co.moxomo.model.Vacancy;
-//import org.bson.types.ObjectId;
-
-import java.util.List;
+import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.model.wrapper.SearchResponse;
 
 /**
  * Created by paballo on 2017/02/20.
  */
+
 public interface SearchService {
 
-    void index(String id, Vacancy vacancy);
+    Vacancy indexDocument(Vacancy vacancy);
 
-    void removeDocument(String id);
+    Vacancy getVacancy(String id);
 
-   // void removeDocuments(List<ObjectId> ids);
+    SearchResponse search(String searchString, int offset, int limit);
 }

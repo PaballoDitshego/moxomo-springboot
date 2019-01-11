@@ -1,12 +1,11 @@
-package co.moxomo.tasks;
+package za.co.moxomo.tasks;
 
-import co.moxomo.crawlers.*;
-import co.moxomo.services.VacancyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import za.co.moxomo.crawlers.PNet;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,30 +19,24 @@ import java.util.concurrent.Executors;
 @Component
 public class ScheduledTasks {
 
-    private VacancyService vacancyService;
     private PNet pnet;
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
    @Autowired
     public ScheduledTasks( PNet pnet){
-       // this.vacancyService = vacancyService;
         this.pnet = pnet;
     }
     @Scheduled(fixedRate = 14400000) //runs every 4 hours
     public void crawl(){
         logger.info("Crawl started.");
+           // ExecutorService executor = Executors.newFixedThreadPool(5);
+           pnet.crawl();
+           // executor.execute(() -> pnet.crawl());
 
-            ExecutorService executor = Executors.newFixedThreadPool(5);
-            for (int i = 0; i < 3; i++) {
-                executor.execute(() -> pnet.crawl());
-            }
-            executor.shutdown();
+          //  executor.shutdown();
 
         }
-      //  pnet.crawl();
-    //    CareerJunction.crawl();
-    //    Careers24.crawl();
-    //    JobVine.crawl();
+
 
     @Scheduled(fixedRate = 14400000)
     public void deleteExpired(){

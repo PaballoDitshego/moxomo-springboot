@@ -1,9 +1,9 @@
-package co.moxomo.crawlers;
+package za.co.moxomo.crawlers;
 
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import co.moxomo.utils.Util;
+import za.co.moxomo.utils.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

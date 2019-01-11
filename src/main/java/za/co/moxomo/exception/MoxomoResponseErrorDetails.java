@@ -11,7 +11,8 @@ import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({ "timestamp", "message", "details" })
-public class BulkRefundsResponseErrorDetails {
+
+public class MoxomoResponseErrorDetails {
 	@JsonProperty("timestamp")
 	private Date timestamp;
 	@JsonProperty("message")
@@ -19,7 +20,7 @@ public class BulkRefundsResponseErrorDetails {
 	@JsonProperty("details")
 	private String details;
 	
-	public BulkRefundsResponseErrorDetails(Date timestamp, String message, String details) {
+	public MoxomoResponseErrorDetails(Date timestamp, String message, String details) {
 		super();
 		this.message = message;
 		this.details = details;

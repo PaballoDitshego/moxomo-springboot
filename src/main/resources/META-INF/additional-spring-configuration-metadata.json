@@ -1,1 +1,8 @@
-{ "properties": [ ] }
+{
+  "properties": [
+    {
+      "name": "elasticsearch.port",
+      "type": "java.lang.Integer",
+      "description": "Description for elasticsearch.port."
+  }
+] }

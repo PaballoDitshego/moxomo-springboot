@@ -1,8 +1,6 @@
-package repository;
+package za.co.moxomo.repository.elasticsearch;
 
-import co.moxomo.model.Vacancy;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import za.co.moxomo.model.Vacancy;
 
-public interface VacancySearchRepository  extends ElasticsearchRepository<Vacancy, String> {
-
-}
+public interface VacancySearchRepository  extends ElasticsearchRepository<Vacancy, String> { }
