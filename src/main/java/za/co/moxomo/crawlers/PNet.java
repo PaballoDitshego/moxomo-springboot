@@ -56,13 +56,11 @@ public class PNet {
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
+                            .ignoreHttpErrors(true)
                             .userAgent(
-                                    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:5.0) Gecko/20100101 Firefox/5.0")
+                                    "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
                             .timeout(60000).execute();
 
-                    if (response.statusCode() == 500) {
-                        continue;
-                    }
                     Document doc = response.parse();
                     if (Objects.nonNull(doc)) {
                         Elements links = doc.select("a");

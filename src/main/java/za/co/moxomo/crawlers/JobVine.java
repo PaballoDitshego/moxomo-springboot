@@ -129,7 +129,7 @@ public class JobVine implements Serializable {
 								Vacancy vacancy = createVacancy(url);
 								if (vacancy != null) {
 
-									Util.save(vacancy);
+								//	Util.save(vacancy);
 
 								}
 
@@ -152,11 +152,11 @@ public class JobVine implements Serializable {
 				.trim();
 		String website = "http://m.jobvine.co.za/#/job/" + id;
 
-		if (savedJobs.contains(website) || Util.isAvailable(website)) {
+		/*if (savedJobs.contains(website) || Util.isAvailable(website)) {
 			
 			return null;
 		}
-
+*/
 		try {
 
 			Document doc = Jsoup

@@ -24,7 +24,7 @@ public class CareerJunction {
 
     private static ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<String>();
 
-    public static void crawl() {
+/*    public static void crawl() {
         CareerJunction c = new CareerJunction();
         c.crawl(CAREER);
     }
@@ -109,6 +109,6 @@ public class CareerJunction {
             }
         }
 
-    }
+    }*/
 
 }

@@ -29,7 +29,7 @@ public class Careers24 {
 	private static ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
 	private static HashSet<String> savedJobs = new HashSet<String>();
 
-	public static void crawl() {
+/*	public static void crawl() {
 
 		Careers24 c = new Careers24();
 		c.crawl(CAREERS24);
@@ -225,13 +225,13 @@ public class Careers24 {
 			return null;
 
 		}
-		/*vacancy.setAdvertDate(today);
+		*//*vacancy.setAdvertDate(today);
 		c.add(Calendar.DATE, 33);
 		vacancy.setClosingDate(c.getTime());
-*/
+*//*
 		return vacancy;
 		}
-		
+		*/
 	
 	
 

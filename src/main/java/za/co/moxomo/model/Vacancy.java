@@ -46,9 +46,9 @@ public class Vacancy {
     private String source;
     private String affirmativeAction;
     private String additionalTokens;
+    private Date closingDate;
 
-   // private String[] additionalTokens;
-   private Vacancy(){
+   public Vacancy(){
 
    }
     public Vacancy(String jobTitle, String description, String offerId, String company, String location,
@@ -271,6 +271,14 @@ public class Vacancy {
                 ", remuneration='" + remuneration + '\'' +
                 ", source='" + source + '\'' +
                 '}';
+    }
+
+    public Date getClosingDate() {
+        return closingDate;
+    }
+
+    public void setClosingDate(Date closingDate) {
+        this.closingDate = closingDate;
     }
 
     public String getSource() {

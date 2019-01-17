@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import za.co.moxomo.crawlers.FirstRand;
+import za.co.moxomo.crawlers.MrPrice;
 import za.co.moxomo.crawlers.PNet;
 
 import java.text.ParseException;
@@ -20,18 +22,21 @@ import java.util.concurrent.Executors;
 public class ScheduledTasks {
 
     private PNet pnet;
+    private FirstRand firstRand;
+    private MrPrice mrPrice;
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
    @Autowired
-    public ScheduledTasks( PNet pnet){
+    public ScheduledTasks(PNet pnet, FirstRand firstRand, MrPrice mrPrice){
         this.pnet = pnet;
+        this.firstRand=firstRand;
+        this.mrPrice=mrPrice;
     }
     @Scheduled(fixedRate = 14400000) //runs every 4 hours
     public void crawl(){
         logger.info("Crawl started.");
-           // ExecutorService executor = Executors.newFixedThreadPool(5);
-           pnet.crawl();
-           // executor.execute(() -> pnet.crawl());
+          ExecutorService executor = Executors.newFixedThreadPool(5);
+            executor.execute(() -> mrPrice.crawl());
 
           //  executor.shutdown();
 

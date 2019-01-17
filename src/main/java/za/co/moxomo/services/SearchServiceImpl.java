@@ -70,7 +70,8 @@ public class SearchServiceImpl implements SearchService {
                                 .operator(AND)
                                 .fuzziness(Fuzziness.AUTO)
                                 .prefixLength(3)
-                                .type(MultiMatchQueryBuilder.Type.BEST_FIELDS)).withSourceFilter(sourceFilter)
+                                .type(MultiMatchQueryBuilder.Type.BEST_FIELDS))
+                .withSourceFilter(sourceFilter)
                 .withPageable(pageRequest)
                 .build();
 
