@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.model.wrapper.SearchResponse;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
+import za.co.moxomo.utils.Util;
 
 import java.util.Objects;
 
@@ -29,6 +30,12 @@ import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
+
+    @Override
+    public boolean isExists(Vacancy vacancy) {
+        return Objects.nonNull(vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(),vacancy.getCompany()));
+    }
+
     private VacancySearchRepository vacancySearchRepository;
     private ElasticsearchOperations elasticsearchTemplate;
 
@@ -39,8 +46,10 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Vacancy indexDocument(Vacancy vacancy) {
-        Objects.requireNonNull(vacancy);
+    public Vacancy index(Vacancy vacancy) {
+        if(!Util.validate(vacancy)){
+            throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
+        }
         return vacancySearchRepository.save(vacancy);
     }
 

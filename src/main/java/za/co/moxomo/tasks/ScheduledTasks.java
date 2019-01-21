@@ -36,7 +36,7 @@ public class ScheduledTasks {
     public void crawl(){
         logger.info("Crawl started.");
           ExecutorService executor = Executors.newFixedThreadPool(5);
-            executor.execute(() -> mrPrice.crawl());
+          //  executor.execute(() -> mrPrice.crawl());
 
           //  executor.shutdown();
 

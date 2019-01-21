@@ -1,6 +1,5 @@
 package za.co.moxomo.crawlers;
 
-import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -10,19 +9,19 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.services.JSoupTest;
+import za.co.moxomo.services.SearchService;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class FirstRand {
@@ -31,13 +30,14 @@ public class FirstRand {
     private static final String RMB = "https://www.firstrandjobs.mobi/Jobs/List";
     private static final String RMB_DETAIL_URL = "https://www.firstrandjobs.mobi/Jobs/Detail?refNumber=";
 
-    private final VacancySearchRepository vacancySearchRepository;
+    private final SearchService searchService;
 
     @Autowired
-    public FirstRand(VacancySearchRepository vacancySearchRepository) {
-        this.vacancySearchRepository = vacancySearchRepository;
+    public FirstRand(SearchService searchService) {
+        this.searchService = searchService;
     }
 
+    @Scheduled(fixedRate = 14400000)
     public void crawl() {
 
         Map<String, String> dataMap = new HashMap<>();
@@ -50,6 +50,7 @@ public class FirstRand {
         dataMap.put("getPartial", "true");
         dataMap.put("professionalArea", "");
         dataMap.put("dateSearch", "all");
+
         try {
             Connection.Response response
                     = Jsoup.connect(RMB)
@@ -61,23 +62,9 @@ public class FirstRand {
                     .execute();
 
             Document document = response.parse();
-
-            Elements elements = document.getElementsByClass("refNum");
-            List<String> referenceNumbers = new ArrayList<>();
-
-            for (Element element : elements) {
-                referenceNumbers.add(element.text());
-            }
-            Elements locationElements = document.getElementsByClass("location");
-            List<String> locations = new ArrayList<>();
-            for (Element element : locationElements) {
-                locations.add(element.text());
-            }
-            Elements endDateElements = document.getElementsByClass("endDate");
-            List<String> endDates = new ArrayList<>();
-            for (Element element : endDateElements) {
-                endDates.add(element.text());
-            }
+            List<String> referenceNumbers = document.getElementsByClass("refNum").stream().map(e -> e.text()).collect(Collectors.toList());
+            List<String> locations = document.getElementsByClass("location").stream().map(e -> e.text()).collect(Collectors.toList());
+            List<String> endDates = document.getElementsByClass("endDate").stream().map(e -> e.text()).collect(Collectors.toList());
 
             List<Vacancy> vacancies = new ArrayList<>();
             for (int i = 0; i < referenceNumbers.size(); i++) {
@@ -104,58 +91,62 @@ public class FirstRand {
     private void getJobDetail(Vacancy vacancy) {
         Objects.requireNonNull(vacancy.getOfferId());
 
-        if(Objects.isNull(vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(),vacancy.getCompany()))){
-        String url = RMB_DETAIL_URL.concat(vacancy.getOfferId());
-        logger.info("url {}", url);
-        if (Objects.nonNull(url)) {
-            try {
-                Connection.Response response = Jsoup
-                        .connect(url)
-                        .ignoreHttpErrors(true)
-                        .userAgent(
-                                "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
-                        .timeout(60000).execute();
+        if (!searchService.isExists(vacancy)) {
+            String url = RMB_DETAIL_URL.concat(vacancy.getOfferId());
+            logger.info("url {}", url);
+            if (Objects.nonNull(url)) {
+                try {
+                    Connection.Response response = Jsoup
+                            .connect(url)
+                            .ignoreHttpErrors(true)
+                            .userAgent(
+                                    "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
+                            .timeout(60000).execute();
 
-                Document doc = response.parse();
-                if (Objects.nonNull(doc)) {
-                    String jobHeader = doc.getElementsByClass("JobHeaders").first().text();
-                    vacancy.setAdditionalTokens(jobHeader);
-                    Element element = doc.getElementById("requirements");
-                    logger.info("Requirements {}", element.text());
-                    String description = StringUtils.substringBetween(element.text(), "purpose", "experience and qualifications");
-                    vacancy.setDescription(description);
-                    logger.info("description {}", description);
-                    String qualifications = StringUtils.substring(element.text(), element.text().lastIndexOf("experience and qualifications"), element.text().length()).trim();
-                    vacancy.setQualifications(qualifications);
-                    qualifications = StringUtils.remove(qualifications, "experience and qualifications");
-                    logger.info("qualifications {}", qualifications);
-                    String title = doc.select("meta[name=twitter:title]").first()
-                            .attr("content").trim();
-                    vacancy.setJobTitle(title);
-                    String imageUrl = doc.select("meta[name=twitter:image]").first()
-                            .attr("content").trim();
-                    vacancy.setImageUrl(imageUrl);
-                    vacancy.setUrl(url);
+                    Document doc = response.parse();
+                    if (Objects.nonNull(doc)) {
+                        String jobHeader = doc.getElementsByClass("JobHeaders").first().text();
+                        vacancy.setAdditionalTokens(jobHeader);
+                        Element element = doc.getElementById("requirements");
+                        logger.info("Requirements {}", element.text());
+                        String description = StringUtils.substringBetween(element.text(), "purpose", "experience and qualifications");
+                        vacancy.setDescription(description);
+                        logger.info("description {}", description);
+                        String qualifications = StringUtils.substring(element.text(), element.text().lastIndexOf("experience and qualifications"), element.text().length()).trim();
+                        vacancy.setQualifications(qualifications);
+                        qualifications = StringUtils.remove(qualifications, "experience and qualifications");
+                        logger.info("qualifications {}", qualifications);
+                        String title = doc.select("meta[name=twitter:title]").first()
+                                .attr("content").trim();
+                        vacancy.setJobTitle(title);
+                        String imageUrl = doc.select("meta[name=twitter:image]").first()
+                                .attr("content").trim();
+                        vacancy.setImageUrl(imageUrl);
+                        vacancy.setUrl(url);
 
-                    logger.info("title {}", title);
-                    logger.info("imageUrl {}", imageUrl);
-                    Element additionalElem = doc.getElementsByClass("detail-block").last();
-                    StringBuilder builder = new StringBuilder();
-                    for (Element element1 : additionalElem.getElementsByTag("li")) {
-                        builder.append(element1.text().trim()).append(System.getProperty("line.separator"));
+                        logger.info("title {}", title);
+                        logger.info("imageUrl {}", imageUrl);
+                        Element additionalElem = doc.getElementsByClass("detail-block").last();
+                        StringBuilder builder = new StringBuilder();
+
+                        for (Element element1 : additionalElem.getElementsByTag("li")) {
+                            builder.append(element1.text().trim()).append(System.getProperty("line.separator"));
+                        }
+                        String responsibilities = builder.toString().trim();
+                        vacancy.setCompany("FirstRand");
+                        vacancy.setResponsibilities(responsibilities);
+
+                        logger.info("responsibilities {}", builder.toString());
+
+                        searchService.index(vacancy);
                     }
-                    String responsibilities = builder.toString().trim();
-                    vacancy.setCompany("FirstRand");
-                    vacancy.setResponsibilities(responsibilities);
-                    logger.info("responsibilities {}", builder.toString());
-                    vacancySearchRepository.save(vacancy);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
         }
-
-    }}
+    }
 }

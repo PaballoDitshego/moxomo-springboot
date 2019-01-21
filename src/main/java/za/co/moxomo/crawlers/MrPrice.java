@@ -7,17 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import za.co.moxomo.crawlers.model.mrprice.MrPriceResponse;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
+import za.co.moxomo.services.SearchService;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -25,15 +25,16 @@ public class MrPrice {
 
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);
     private static final String ENDPOINT = "https://mrpcareers.azurewebsites.net/csod.json";
-    private VacancySearchRepository vacancySearchRepository;
+    private SearchService searchService;
     private RestTemplate restTemplate;
 
     @Autowired
-    public MrPrice(VacancySearchRepository vacancySearchRepository, RestTemplate restTemplate) {
-        this.vacancySearchRepository = vacancySearchRepository;
+    public MrPrice(SearchService searchService, RestTemplate restTemplate) {
+        this.searchService =searchService;
         this.restTemplate = restTemplate;
     }
 
+    @Scheduled(fixedRate = 14400000)
     public void crawl() {
         ResponseEntity<List<MrPriceResponse>> responseEntity = restTemplate.exchange(ENDPOINT,
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<MrPriceResponse>>() {
@@ -76,9 +77,10 @@ public class MrPrice {
         vacancy.setLocation(location);
         vacancy.setCompany("Mr Price");
         vacancy.setImageUrl(imageUrl);
-        if(Objects.isNull(vacancySearchRepository
-                .findByOfferIdAndAndCompany(offerId, "Mr Price"))){
-            vacancySearchRepository.save(vacancy);
+        vacancy.setRemuneration(mrPriceResponse.getCompensation());
+
+        if(!searchService.isExists(vacancy)){
+            searchService.index(vacancy);
         }
     }
 

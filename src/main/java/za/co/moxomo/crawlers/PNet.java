@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.services.SearchService;
@@ -38,6 +39,7 @@ public class PNet {
         this.searchService = searchService;
     }
 
+    @Scheduled(fixedRate = 14400000)
     public void crawl() {
         crawl(PNET);
     }
@@ -88,7 +90,7 @@ public class PNet {
                                 //index document
                                 Vacancy vacancy = createVacancy(url, doc);
                                 if (!capturedOffers.contains(vacancy.getOfferId()) && Util.validate(vacancy)) {
-                                    searchService.indexDocument(vacancy);
+                                    searchService.index(vacancy);
                                     capturedOffers.add(vacancy.getOfferId());
                                     logger.info("Saved vacancy item with id {}", vacancy.getId());
                                 }
