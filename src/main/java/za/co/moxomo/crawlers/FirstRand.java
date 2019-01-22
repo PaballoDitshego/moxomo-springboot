@@ -23,7 +23,7 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 public class FirstRand {
 
     private static final Logger logger = LoggerFactory.getLogger(JSoupTest.class);

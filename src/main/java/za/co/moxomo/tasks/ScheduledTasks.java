@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by paballo on 2016/11/16.
  */
-@Component
+//@Component
 public class ScheduledTasks {
 
     private PNet pnet;
@@ -43,7 +43,7 @@ public class ScheduledTasks {
         }
 
 
-    @Scheduled(fixedRate = 14400000)
+ //   @Scheduled(fixedRate = 14400000)
     public void deleteExpired(){
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");

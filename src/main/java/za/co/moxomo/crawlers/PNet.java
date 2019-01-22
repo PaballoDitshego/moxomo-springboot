@@ -55,6 +55,7 @@ public class PNet {
             }
             crawledUrls.add(url);
             if (Objects.nonNull(url)) {
+                logger.debug("Crawling url {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -68,7 +69,6 @@ public class PNet {
                         Elements links = doc.select("a");
                         for (Element link : links) {
                             String _link = link.attr("abs:href");
-                            logger.info("link {}", _link);
                             if (_link.length() < 1) {
                                 continue;
                             }
@@ -77,7 +77,7 @@ public class PNet {
                                 _link = _link.substring(0, index);
                             }
                             if (urlsToCrawl.contains(_link) || crawledUrls.contains(_link)) {
-                                logger.info("Contains crawled url {}", _link);
+                                logger.debug("Contains crawled url {}", _link);
                                 continue;
                             }
                             // urls that contain add info
@@ -89,16 +89,19 @@ public class PNet {
                             if (url.contains("jobs--") && url.contains("inline")) {
                                 //index document
                                 Vacancy vacancy = createVacancy(url, doc);
-                                if (!capturedOffers.contains(vacancy.getOfferId()) && Util.validate(vacancy)) {
+                                if (!capturedOffers.contains(url) && !searchService.isExists(vacancy)) {
+                                    logger.debug("Does not exist");
                                     searchService.index(vacancy);
                                     capturedOffers.add(vacancy.getOfferId());
-                                    logger.info("Saved vacancy item with id {}", vacancy.getId());
+                                    logger.debug("Saved vacancy item with id {}", vacancy.getId());
                                 }
                             }
                         }
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
+                    //  continue;
                 }
             }
         }
@@ -109,93 +112,100 @@ public class PNet {
         Objects.requireNonNull(doc);
         Vacancy vacancy;
         try {
-                String jobTitle;
-                String description;
-                String company = null;
-                String location = null;
-                String date;
-                String remuneration = null;
-                String contractType = null;
-                String affirmativeAction = null;
-                String responsibilities = null;
-                String offerId = null;
-                String qualifications = null;
-                String imageUrl = null;
-                String additionalTokens = null;
-                Date advertDate = null;
-                SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss", Locale.ENGLISH);
+            String jobTitle;
+            String description;
+            String company = null;
+            String location = null;
+            String date;
+            String remuneration = null;
+            String contractType = null;
+            String affirmativeAction = null;
+            String responsibilities = null;
+            String offerId = null;
+            String qualifications = null;
+            String imageUrl = null;
+            String additionalTokens = null;
+            Date advertDate = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
 
-                jobTitle = doc.getElementsByClass("listingTitle").text()
-                        .trim();
-                logger.info("position dd: {}", jobTitle);
-                for (Element element : doc.getElementsByClass("listing__apply-now_bottom")) {
-                    offerId = element.select("a").first().attr("data-offerid");
-                    logger.info("offerid {}", offerId);
-                }
+            jobTitle = doc.getElementsByClass("listingTitle").text()
+                    .trim();
+
+            logger.debug("position dd: {}", jobTitle);
+            for (Element element : doc.getElementsByClass("listing__apply-now_bottom")) {
+                offerId = element.select("a").first().attr("data-offerid");
+                logger.debug("offerid {}", offerId);
+            }
+            if (Objects.nonNull(doc.getElementById("company-intro"))) {
                 description = doc.getElementById("company-intro").text().trim();
-                logger.info("desc {}", description);
+            } else {
+                description = jobTitle;
+            }
+            logger.debug("desc {}", description);
+            StringBuilder builder = new StringBuilder();
+            if (Objects.nonNull(doc.getElementById("job-tasks"))) {
+                for (Element responsibility : doc.getElementById("job-tasks").getAllElements()) {
+                    builder.append(responsibility.text().trim()).append(System.getProperty("line.separator"));
+                }
+                responsibilities = builder.toString();
+                builder.setLength(0);
+                logger.debug("responsibilities {}", responsibilities);
+            }
 
-                StringBuilder builder = new StringBuilder();
-                if (Objects.nonNull(doc.getElementById("job-tasks"))) {
-                    for (Element responsibility : doc.getElementById("job-tasks").getAllElements()) {
-                        builder.append(responsibility.text().trim()).append(System.getProperty("line.separator"));
-                    }
-                    responsibilities = builder.toString();
-                    builder.setLength(0);
-                    logger.info("responsibilities {}", responsibilities);
+            if (Objects.nonNull(doc.getElementById("job-requim"))) {
+                for (Element qualification : doc.getElementById("job-requim").getAllElements()) {
+                    builder.append(qualification.text().trim()).append(System.getProperty("line.separator"));
                 }
+                qualifications = builder.toString();
+                logger.debug("qualification {}", qualifications);
+                builder.setLength(0);
+            }
+            Elements companyInfo = doc.getElementsByClass("js-company-content-card");
+            for (Element el : companyInfo) {
+                if (el.hasAttr("data-logo")) {
+                    imageUrl = el.attr("data-logo").trim();
+                }
+                if (el.hasAttr("data-name")) {
+                    company = el.attr("data-name").trim();
+                }
+            }
+            if(Objects.isNull(company)){
 
-                if (Objects.nonNull(doc.getElementById("job-requim"))) {
-                    for (Element qualification : doc.getElementById("job-requim").getAllElements()) {
-                        builder.append(qualification.text().trim()).append(System.getProperty("line.separator"));
-                    }
-                    qualifications = builder.toString();
-                    logger.info("qualification {}", qualifications);
-                    builder.setLength(0);
+            }
+            Elements listings = doc.getElementsByClass("listing-list");
+            for (Element element : listings) {
+                if (element.className().equals("listing-list at-listing__list-icons_location")) {
+                    location = element.text();
+                    continue;
                 }
-                Elements companyInfo = doc.getElementsByClass("js-company-content-card");
-                for (Element el : companyInfo) {
-                    if (el.hasAttr("data-logo")) {
-                        imageUrl = el.attr("data-logo").trim();
-                    }
-                    if (el.hasAttr("data-name")) {
-                        company = el.attr("data-name").trim();
-                    }
+                if (element.className().equals("listing-list at-listing__list-icons_contract-type")) {
+                    contractType = element.text();
+                    continue;
                 }
-                Elements listings = doc.getElementsByClass("listing-list");
-                for (Element element : listings) {
-                    if (element.className().equals("listing-list at-listing__list-icons_location")) {
-                        location = element.text();
-                        continue;
-                    }
-                    if (element.className().equals("listing-list at-listing__list-icons_contract-type")) {
-                        contractType = element.text();
-                        continue;
-                    }
-                    if (element.className().equals("listing-list at-listing__list-icons_salary")) {
-                        remuneration = element.text().trim();
-                        continue;
-                    }
-                    if (element.className().equals("listing-list at-listing__list-icons_eeaa")) {
-                        affirmativeAction = element.text().trim();
-                        continue;
-                    }
-                    if (element.className().equals("listing-list at-listing__list-icons_date")) {
-                        date = element.getAllElements().last().attr("data-date");
-                        logger.info("date {}", date);
-                        advertDate = sdf.parse(date);
-                        continue;
-                    }
+                if (element.className().equals("listing-list at-listing__list-icons_salary")) {
+                    remuneration = element.text().trim();
+                    continue;
                 }
-                if (Objects.nonNull(doc.getElementsByClass("tokens-list__item__link"))) {
-                    for (Element element : doc.getElementsByClass("tokens-list__item__link")) {
-                        builder.append(element.text().trim()).append(", ");
-                    }
-                    additionalTokens = builder.toString();
+                if (element.className().equals("listing-list at-listing__list-icons_eeaa")) {
+                    affirmativeAction = element.text().trim();
+                    continue;
                 }
-                vacancy = new Vacancy(jobTitle, description, offerId, company, location,
-                        location, qualifications, responsibilities, advertDate,
-                        contractType, imageUrl, remuneration, "PNET", additionalTokens, affirmativeAction, url);
+                if (element.className().equals("listing-list at-listing__list-icons_date")) {
+                    date = element.getAllElements().last().attr("data-date");
+                    logger.debug("date {}", date);
+                    advertDate = sdf.parse(date);
+                    continue;
+                }
+            }
+            if (Objects.nonNull(doc.getElementsByClass("tokens-list__item__link"))) {
+                for (Element element : doc.getElementsByClass("tokens-list__item__link")) {
+                    builder.append(element.text().trim()).append(", ");
+                }
+                additionalTokens = builder.toString();
+            }
+            vacancy = new Vacancy(jobTitle, description, offerId, company, location,
+                    location, qualifications, responsibilities, advertDate,
+                    contractType, imageUrl, remuneration, "PNET", additionalTokens, affirmativeAction, url);
         } catch (ParseException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

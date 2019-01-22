@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
-@Component
+//@Component
 public class MrPrice {
 
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);

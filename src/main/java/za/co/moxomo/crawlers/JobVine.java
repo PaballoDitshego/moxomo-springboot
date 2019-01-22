@@ -123,16 +123,13 @@ public class JobVine implements Serializable {
 
 							Calendar c = Calendar.getInstance();
 							c.add(Calendar.DATE, -2);
-
 							if (!temp.before(c.getTime())) {
-
 								Vacancy vacancy = createVacancy(url);
 								if (vacancy != null) {
 
 								//	Util.save(vacancy);
 
 								}
-
 							}
 						}
 					}

@@ -33,7 +33,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public boolean isExists(Vacancy vacancy) {
-        return Objects.nonNull(vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(),vacancy.getCompany()));
+        return vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(),vacancy.getCompany()).size()>0;
     }
 
     private VacancySearchRepository vacancySearchRepository;
@@ -50,7 +50,10 @@ public class SearchServiceImpl implements SearchService {
         if(!Util.validate(vacancy)){
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
-        return vacancySearchRepository.save(vacancy);
+        logger.info("Title {}, Advert Date {}",vacancy.getJobTitle(), vacancy.getAdvertDate());
+        vacancy = vacancySearchRepository.save(vacancy);
+        logger.info("Saved vacancy {}", vacancy.toString());
+        return vacancy;
     }
 
     @Override
