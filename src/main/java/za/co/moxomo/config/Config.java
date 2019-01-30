@@ -21,9 +21,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
@@ -124,10 +122,6 @@ public class Config {
         return threadPoolTaskScheduler;
     }
 
-    @Bean
-    public TaskScheduler taskScheduler() {
-        return new ConcurrentTaskScheduler();
-    }
 
     @Bean
     public Docket api() {

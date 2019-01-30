@@ -1,5 +1,6 @@
 package za.co.moxomo.crawlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.services.SearchService;
-import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,10 +29,7 @@ public class PNet {
 
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
             .getCanonicalName());
-    private static final HashSet<String> crawledUrls = new HashSet<>();
-    private static final HashSet<String> capturedOffers = new HashSet<>();
     private final String PNET = "http://www.pnet.co.za/jobs/all-jobs.html";
-    private final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
     private SearchService searchService;
 
     @Autowired
@@ -45,8 +43,20 @@ public class PNet {
     }
 
     private void crawl(final String startUrl) {
+        final HashSet<String> crawledUrls = new HashSet<>();
+        final HashSet<String> capturedOffers = new HashSet<>();
+        final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
+        int i =25;
+        while(i<=500){
+            String url =(i==0)?"https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1":"https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
+            urlsToCrawl.add(url);
+            i+=25;
+
+        }
+        logger.info("Done i {}, urlsTocrawl {}", i, urlsToCrawl.size());
+
         // Add the start URL to the list of URLs to crawl
-        urlsToCrawl.add(startUrl);
+       // urlsToCrawl.add(startUrl);
         while (urlsToCrawl.iterator().hasNext() && crawledUrls.size() < 20000) {
             String url = urlsToCrawl.iterator().next();
             urlsToCrawl.remove();
@@ -55,7 +65,7 @@ public class PNet {
             }
             crawledUrls.add(url);
             if (Objects.nonNull(url)) {
-                logger.debug("Crawling url {}", url);
+                logger.info("Crawling PNET {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -80,12 +90,23 @@ public class PNet {
                                 logger.debug("Contains crawled url {}", _link);
                                 continue;
                             }
-                            // urls that contain add info
+                          /*  // urls that contain add info
                             if (_link.toLowerCase().contains("jobs-in--")
                                     || _link.toLowerCase().contains("jobs")
-                                    ) {
+                            ) {
                                 urlsToCrawl.add(_link);
-                            }
+                            }*/
+                              // urls that contain add info
+                            if (_link.toLowerCase().contains("jobs--")
+                                    || _link.toLowerCase().contains("inline")
+                            ) {
+                                urlsToCrawl.add(_link);
+                            }  /*  // urls that contain add info
+                            if (_link.toLowerCase().contains("jobs-in--")
+                                    || _link.toLowerCase().contains("jobs")
+                            ) {
+                                urlsToCrawl.add(_link);
+                            }*/
                             if (url.contains("jobs--") && url.contains("inline")) {
                                 //index document
                                 Vacancy vacancy = createVacancy(url, doc);
@@ -127,6 +148,7 @@ public class PNet {
             String additionalTokens = null;
             Date advertDate = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+            ObjectMapper mapper = new ObjectMapper();
 
             jobTitle = doc.getElementsByClass("listingTitle").text()
                     .trim();
@@ -169,7 +191,21 @@ public class PNet {
                     company = el.attr("data-name").trim();
                 }
             }
-            if(Objects.isNull(company)){
+            if (Objects.isNull(company)) {
+                Elements elements = doc.getElementsByClass("at-listing-nav-company-name-link");
+                if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("title")) {
+                    company = elements.first().attr("title");
+                }
+
+            }
+            if (Objects.isNull(imageUrl)) {
+                Elements elements = doc.getElementsByClass("js-sticky-bar");
+                if (Objects.nonNull(elements) && elements.first().hasAttr("data-settings")) {
+                    AdditionalInfo additionalInfo = mapper.readValue(elements.first().attr("data-settings"), AdditionalInfo.class);
+                    imageUrl = "https://www.pnet.co.za".concat(additionalInfo.getLogoImageUrl());
+                    jobTitle = additionalInfo.getJobTitle();
+
+                }
 
             }
             Elements listings = doc.getElementsByClass("listing-list");
@@ -205,13 +241,15 @@ public class PNet {
             }
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
-                    contractType, imageUrl, remuneration, "PNET", additionalTokens, affirmativeAction, url);
-        } catch (ParseException e) {
+                    contractType, Objects.nonNull(imageUrl) ? imageUrl : "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png", remuneration, "PNET", additionalTokens, affirmativeAction, url);
+        } catch (ParseException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
         return vacancy;
     }
+
+
 
 
 }

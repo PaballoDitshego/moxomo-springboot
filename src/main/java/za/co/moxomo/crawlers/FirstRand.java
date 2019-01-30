@@ -23,7 +23,7 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//@Component
+@Component
 public class FirstRand {
 
     private static final Logger logger = LoggerFactory.getLogger(JSoupTest.class);
@@ -40,6 +40,7 @@ public class FirstRand {
     @Scheduled(fixedRate = 14400000)
     public void crawl() {
 
+        logger.info("Crawling FNB");
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("includeLayoutPage", "false");
         dataMap.put("Country", "");
@@ -69,7 +70,9 @@ public class FirstRand {
             List<Vacancy> vacancies = new ArrayList<>();
             for (int i = 0; i < referenceNumbers.size(); i++) {
                 if (Objects.nonNull(endDates.get(i))) {
-                    LocalDate localDate = LocalDate.parse(endDates.get(i).substring(5), DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM));
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+
+                    LocalDate localDate = LocalDate.parse(endDates.get(i).substring(5), formatter);
                     if (localDate.isAfter(LocalDate.now())) {
                         Vacancy vacancy = new Vacancy();
                         vacancy.setId(UUID.randomUUID().toString());
@@ -83,6 +86,7 @@ public class FirstRand {
 
             }
             vacancies.stream().forEach(this::getJobDetail);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,9 +95,10 @@ public class FirstRand {
     private void getJobDetail(Vacancy vacancy) {
         Objects.requireNonNull(vacancy.getOfferId());
 
-        if (!searchService.isExists(vacancy)) {
+       if (!searchService.isExists(vacancy)) {
             String url = RMB_DETAIL_URL.concat(vacancy.getOfferId());
-            logger.info("url {}", url);
+            logger.info("Crawling FNB {}", url);
+            logger.debug("url {}", url);
             if (Objects.nonNull(url)) {
                 try {
                     Connection.Response response = Jsoup
@@ -108,14 +113,14 @@ public class FirstRand {
                         String jobHeader = doc.getElementsByClass("JobHeaders").first().text();
                         vacancy.setAdditionalTokens(jobHeader);
                         Element element = doc.getElementById("requirements");
-                        logger.info("Requirements {}", element.text());
+                        logger.debug("Requirements {}", element.text());
                         String description = StringUtils.substringBetween(element.text(), "purpose", "experience and qualifications");
                         vacancy.setDescription(description);
-                        logger.info("description {}", description);
+                        logger.debug("description {}", description);
                         String qualifications = StringUtils.substring(element.text(), element.text().lastIndexOf("experience and qualifications"), element.text().length()).trim();
                         vacancy.setQualifications(qualifications);
                         qualifications = StringUtils.remove(qualifications, "experience and qualifications");
-                        logger.info("qualifications {}", qualifications);
+                        logger.debug("qualifications {}", qualifications);
                         String title = doc.select("meta[name=twitter:title]").first()
                                 .attr("content").trim();
                         vacancy.setJobTitle(title);
@@ -124,8 +129,8 @@ public class FirstRand {
                         vacancy.setImageUrl(imageUrl);
                         vacancy.setUrl(url);
 
-                        logger.info("title {}", title);
-                        logger.info("imageUrl {}", imageUrl);
+                        logger.debug("title {}", title);
+                        logger.debug("imageUrl {}", imageUrl);
                         Element additionalElem = doc.getElementsByClass("detail-block").last();
                         StringBuilder builder = new StringBuilder();
 
@@ -136,7 +141,7 @@ public class FirstRand {
                         vacancy.setCompany("FirstRand");
                         vacancy.setResponsibilities(responsibilities);
 
-                        logger.info("responsibilities {}", builder.toString());
+                        logger.debug("responsibilities {}", builder.toString());
 
                         searchService.index(vacancy);
                     }

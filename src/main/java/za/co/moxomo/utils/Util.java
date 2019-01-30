@@ -29,7 +29,7 @@ public class Util {
                 && Objects.nonNull(vacancy.getCompany())
                 && Objects.nonNull(vacancy.getOfferId());
         if (!valid) {
-            logger.info("Invalid {}", vacancy.toString());
+            logger.info("Invalid {}", vacancy.getUrl());
         }
         return valid;
     }

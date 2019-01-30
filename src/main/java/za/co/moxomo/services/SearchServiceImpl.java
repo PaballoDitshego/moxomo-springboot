@@ -50,9 +50,7 @@ public class SearchServiceImpl implements SearchService {
         if(!Util.validate(vacancy)){
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
-        logger.info("Title {}, Advert Date {}",vacancy.getJobTitle(), vacancy.getAdvertDate());
-        vacancy = vacancySearchRepository.save(vacancy);
-        logger.info("Saved vacancy {}", vacancy.toString());
+        vacancySearchRepository.save(vacancy);
         return vacancy;
     }
 
@@ -88,7 +86,7 @@ public class SearchServiceImpl implements SearchService {
                 .build();
 
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
-        logger.info("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
+        logger.debug("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
         int totalNumberOfPages = 1;
         if (totalNumberOfElements > 0) {
             totalNumberOfPages = (totalNumberOfElements / limit) == 0 ? 1 : (totalNumberOfElements / limit);

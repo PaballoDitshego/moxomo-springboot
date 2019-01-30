@@ -85,6 +85,18 @@ public class AbsaResponse {
         return supportedLanguages;
     }
 
+    @Override
+    public String toString() {
+        return "AbsaResponse{" +
+                "requisitionList=" + requisitionList +
+                ", facetResults=" + facetResults +
+                ", pagingData=" + pagingData +
+                ", queryString='" + queryString + '\'' +
+                ", careerSectionUnAvailable=" + careerSectionUnAvailable +
+                ", supportedLanguages=" + supportedLanguages +
+                '}';
+    }
+
     @JsonProperty("supportedLanguages")
     public void setSupportedLanguages(List<SupportedLanguage> supportedLanguages) {
         this.supportedLanguages = supportedLanguages;

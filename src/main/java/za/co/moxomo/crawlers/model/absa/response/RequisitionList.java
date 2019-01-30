@@ -142,4 +142,19 @@ public class RequisitionList {
         this.locationsColumns = locationsColumns;
     }
 
+    @Override
+    public String toString() {
+        return "RequisitionList{" +
+                "hotJob=" + hotJob +
+                ", addedToJobCart=" + addedToJobCart +
+                ", draft=" + draft +
+                ", alreadyAppliedOn=" + alreadyAppliedOn +
+                ", toReApply=" + toReApply +
+                ", jobId='" + jobId + '\'' +
+                ", contestNo='" + contestNo + '\'' +
+                ", column=" + column +
+                ", linkedColumn=" + linkedColumn +
+                ", locationsColumns=" + locationsColumns +
+                '}';
+    }
 }
