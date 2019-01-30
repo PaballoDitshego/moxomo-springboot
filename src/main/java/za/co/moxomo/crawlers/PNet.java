@@ -18,6 +18,7 @@ import za.co.moxomo.services.SearchService;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -37,27 +38,23 @@ public class PNet {
         this.searchService = searchService;
     }
 
-    @Scheduled(fixedRate = 14400000)
-    public void crawl() {
-        crawl(PNET);
-    }
 
-    private void crawl(final String startUrl) {
+    @Scheduled(cron = "0 */2 * * *")
+    public void crawl() {
+        logger.info("Pnet crawl started at {} ", LocalDateTime.now());
+        long startTime = System.currentTimeMillis();
+
         final HashSet<String> crawledUrls = new HashSet<>();
         final HashSet<String> capturedOffers = new HashSet<>();
         final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
-        int i =25;
-        while(i<=500){
-            String url =(i==0)?"https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1":"https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
+
+
+        for (int i = 0; i <= 200; i += 25) {
+            String url = (i == 0) ? "https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1" : "https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
             urlsToCrawl.add(url);
-            i+=25;
 
         }
-        logger.info("Done i {}, urlsTocrawl {}", i, urlsToCrawl.size());
-
-        // Add the start URL to the list of URLs to crawl
-       // urlsToCrawl.add(startUrl);
-        while (urlsToCrawl.iterator().hasNext() && crawledUrls.size() < 20000) {
+        while (urlsToCrawl.iterator().hasNext()) {
             String url = urlsToCrawl.iterator().next();
             urlsToCrawl.remove();
             if (crawledUrls.contains(url)) {
@@ -65,7 +62,7 @@ public class PNet {
             }
             crawledUrls.add(url);
             if (Objects.nonNull(url)) {
-                logger.info("Crawling PNET {}", url);
+                logger.info("Crawling Pnet {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -90,23 +87,12 @@ public class PNet {
                                 logger.debug("Contains crawled url {}", _link);
                                 continue;
                             }
-                          /*  // urls that contain add info
-                            if (_link.toLowerCase().contains("jobs-in--")
-                                    || _link.toLowerCase().contains("jobs")
-                            ) {
-                                urlsToCrawl.add(_link);
-                            }*/
-                              // urls that contain add info
+                            // urls that contain add info
                             if (_link.toLowerCase().contains("jobs--")
                                     || _link.toLowerCase().contains("inline")
                             ) {
                                 urlsToCrawl.add(_link);
-                            }  /*  // urls that contain add info
-                            if (_link.toLowerCase().contains("jobs-in--")
-                                    || _link.toLowerCase().contains("jobs")
-                            ) {
-                                urlsToCrawl.add(_link);
-                            }*/
+                            }
                             if (url.contains("jobs--") && url.contains("inline")) {
                                 //index document
                                 Vacancy vacancy = createVacancy(url, doc);
@@ -122,10 +108,14 @@ public class PNet {
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
-                    //  continue;
+                    continue;
                 }
             }
         }
+        long endTime = System.currentTimeMillis();
+        long executeTime = endTime - startTime;
+
+        logger.info("Pnet crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
     }
 
     private Vacancy createVacancy(String url, Document doc) {
@@ -248,8 +238,6 @@ public class PNet {
         }
         return vacancy;
     }
-
-
 
 
 }

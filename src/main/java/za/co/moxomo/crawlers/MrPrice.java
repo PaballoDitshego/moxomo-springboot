@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
-@Component
+//@Component
 public class MrPrice {
 
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);
@@ -36,7 +36,7 @@ public class MrPrice {
         this.restTemplate = restTemplate;
     }
 
-    @Scheduled(fixedRate = 14400000)
+    @Scheduled(cron = "0 */2 * * *")
     public void crawl() {
         ResponseEntity<List<MrPriceResponse>> responseEntity = restTemplate.exchange(ENDPOINT,
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<MrPriceResponse>>() {

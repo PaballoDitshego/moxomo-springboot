@@ -23,7 +23,7 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 public class FirstRand {
 
     private static final Logger logger = LoggerFactory.getLogger(JSoupTest.class);
@@ -37,7 +37,7 @@ public class FirstRand {
         this.searchService = searchService;
     }
 
-    @Scheduled(fixedRate = 14400000)
+    @Scheduled(cron = "0 */2 * * *")
     public void crawl() {
 
         logger.info("Crawling FNB");
