@@ -17,16 +17,17 @@ import za.co.moxomo.services.SearchService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//@Component
+@Component
 public class FirstRand {
 
-    private static final Logger logger = LoggerFactory.getLogger(JSoupTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(FirstRand.class);
     private static final String RMB = "https://www.firstrandjobs.mobi/Jobs/List";
     private static final String RMB_DETAIL_URL = "https://www.firstrandjobs.mobi/Jobs/Detail?refNumber=";
 
@@ -37,10 +38,11 @@ public class FirstRand {
         this.searchService = searchService;
     }
 
-    @Scheduled(cron = "0 */2 * * *")
+    @Scheduled(fixedDelay=3600000, initialDelay = 600000)
     public void crawl() {
 
-        logger.info("Crawling FNB");
+        logger.info("Crawling FNB started at {}", LocalDateTime.now());
+        long startTime = System.currentTimeMillis();
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("includeLayoutPage", "false");
         dataMap.put("Country", "");
@@ -90,6 +92,10 @@ public class FirstRand {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        long endTime = System.currentTimeMillis();
+        long executeTime = endTime - startTime;
+
+        logger.info("FNB crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
     }
 
     private void getJobDetail(Vacancy vacancy) {

@@ -14,15 +14,13 @@ import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.services.SearchService;
+import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
@@ -39,7 +37,8 @@ public class PNet {
     }
 
 
-    @Scheduled(cron = "0 */2 * * *")
+    // @Scheduled(cron = "0 0 0/1 * * ?", initialDelay = 0)
+    @Scheduled(fixedDelay = 3600000, initialDelay = 0)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -49,7 +48,7 @@ public class PNet {
         final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
 
 
-        for (int i = 0; i <= 200; i += 25) {
+        for (int i = 0; i <= 400; i += 25) {
             String url = (i == 0) ? "https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1" : "https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
             urlsToCrawl.add(url);
 
@@ -93,17 +92,20 @@ public class PNet {
                             ) {
                                 urlsToCrawl.add(_link);
                             }
-                            if (url.contains("jobs--") && url.contains("inline")) {
-                                //index document
-                                Vacancy vacancy = createVacancy(url, doc);
-                                if (!capturedOffers.contains(url) && !searchService.isExists(vacancy)) {
-                                    logger.debug("Does not exist");
-                                    searchService.index(vacancy);
-                                    capturedOffers.add(vacancy.getOfferId());
-                                    logger.debug("Saved vacancy item with id {}", vacancy.getId());
+                        }
+                        if (url.contains("jobs--") && url.contains("inline")) {
+                            //index document
+                            Vacancy vacancy = createVacancy(url, doc);
+                            if (!capturedOffers.contains(url) && !searchService.isExists(vacancy)) {
+                                if (vacancy.getCompany().contains("Communicate")) {
+                                    continue;
                                 }
+                                searchService.index(vacancy);
+                                capturedOffers.add(vacancy.getOfferId());
+                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
                         }
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -122,6 +124,7 @@ public class PNet {
         Objects.requireNonNull(url);
         Objects.requireNonNull(doc);
         Vacancy vacancy;
+        logger.info("Creating");
         try {
             String jobTitle;
             String description;
@@ -139,6 +142,7 @@ public class PNet {
             Date advertDate = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
             ObjectMapper mapper = new ObjectMapper();
+
 
             jobTitle = doc.getElementsByClass("listingTitle").text()
                     .trim();
@@ -192,7 +196,12 @@ public class PNet {
                 Elements elements = doc.getElementsByClass("js-sticky-bar");
                 if (Objects.nonNull(elements) && elements.first().hasAttr("data-settings")) {
                     AdditionalInfo additionalInfo = mapper.readValue(elements.first().attr("data-settings"), AdditionalInfo.class);
-                    imageUrl = "https://www.pnet.co.za".concat(additionalInfo.getLogoImageUrl());
+                    if (Objects.nonNull(additionalInfo.getLogoImageUrl()) && !additionalInfo.getLogoImageUrl().isEmpty()) {
+                        imageUrl = "https://www.pnet.co.za".concat(additionalInfo.getLogoImageUrl());
+                    } else {
+                        imageUrl = "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+                    }
+
                     jobTitle = additionalInfo.getJobTitle();
 
                 }
@@ -229,9 +238,37 @@ public class PNet {
                 }
                 additionalTokens = builder.toString();
             }
+            if (Objects.isNull(jobTitle) || jobTitle.isEmpty()) {
+                logger.info("Else {}", url);
+                jobTitle = doc.getElementsByClass("listing__job-title").first().text();
+                company = doc.getElementsByClass("at-listing-nav-company-name-link").first().text();
+                location = doc.getElementsByClass("listing-list at-listing__list-icons_location").first().text();
+                date = doc.getElementsByClass("date-time-ago").first().attr("data-date");
+                description = doc.getElementsByClass("richtext").first().text();
+                advertDate = sdf.parse(date);
+                offerId = doc.getElementsByAttribute("data-offerid ").first().attr("data-offerid");
+                Elements elements = doc.select("a");
+
+                for (Element e : elements) {
+                    if (e.hasAttr("style")) {
+                        String attr = e.attr("style");
+                        String image = (attr.substring(attr.indexOf("/"), attr.indexOf(")"))).replace("'", "").trim();
+                        imageUrl = (Objects.nonNull(image) && !image.isEmpty()) ? "https://www.pnet.co.za".concat(image) :
+                                "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+                        break;
+                    }
+                }
+                logger.info("imageUrl {]", imageUrl);
+
+
+            }
+
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
-                    contractType, Objects.nonNull(imageUrl) ? imageUrl : "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png", remuneration, "PNET", additionalTokens, affirmativeAction, url);
+                    contractType, (Objects.nonNull(imageUrl) && !imageUrl.contentEquals("https://www.pnet.co.za")) ? imageUrl : "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png", remuneration, "PNET", additionalTokens, affirmativeAction, url);
+            if (vacancy.getImageUrl().contentEquals("https://www.pnet.co.za/upload_za/logo/8/5281-logo.jpg")) {
+                vacancy.setImageUrl("http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png");
+            }
         } catch (ParseException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

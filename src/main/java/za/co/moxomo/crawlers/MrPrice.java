@@ -18,15 +18,17 @@ import za.co.moxomo.services.SearchService;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
-//@Component
+@Component
 public class MrPrice {
 
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);
     private static final String ENDPOINT = "https://mrpcareers.azurewebsites.net/csod.json";
+    private  static final String MOBILE_URL="https://yourjourney.csod.com/m/ats/careersite/index.html?site=4&c=yourjourney&lang=en-US&#jobRequisitions/";
     private SearchService searchService;
     private RestTemplate restTemplate;
 
@@ -36,8 +38,11 @@ public class MrPrice {
         this.restTemplate = restTemplate;
     }
 
-    @Scheduled(cron = "0 */2 * * *")
+    @Scheduled(fixedDelay=3600000, initialDelay = 0)
     public void crawl() {
+
+        logger.info("Crawling MrPrice started at {}", LocalDateTime.now());
+        long startTime = System.currentTimeMillis();
         ResponseEntity<List<MrPriceResponse>> responseEntity = restTemplate.exchange(ENDPOINT,
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<MrPriceResponse>>() {
                 });
@@ -49,11 +54,15 @@ public class MrPrice {
             }
             catch (Exception e){
                 e.printStackTrace();
-            }
-            finally {
                 continue;
-            }
+
+           }
         }
+
+        long endTime = System.currentTimeMillis();
+        long executeTime = endTime - startTime;
+
+        logger.info("Mr Price crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
 
 
     }
@@ -71,8 +80,6 @@ public class MrPrice {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         Date advertDate = Date.valueOf( LocalDate.parse(mrPriceResponse.getDefaultEffectiveDate(), formatter));
         logger.debug("advertDate {}", advertDate);
-        String url = mrPriceResponse.getDefaultURL();
-        logger.info("Url {}", url);
         String offerId = mrPriceResponse.getId().toString();
         Elements elements =Jsoup.parse(mrPriceResponse.getExternalAd()).select("img");
         String imageUrl=null;
@@ -89,7 +96,7 @@ public class MrPrice {
         Vacancy vacancy = new Vacancy();
         vacancy.setOfferId(offerId);
         vacancy.setId(UUID.randomUUID().toString());
-        vacancy.setUrl(url);
+        vacancy.setUrl(MOBILE_URL.concat(offerId));
         vacancy.setDescription(description);
         vacancy.setQualifications(qualification);
         vacancy.setAdvertDate(advertDate);
@@ -99,6 +106,7 @@ public class MrPrice {
         vacancy.setCompany("Mr Price");
         vacancy.setImageUrl((imageUrl!=null)?imageUrl:"https://www.mrp.com/media/vaimo/uploadlogo/default/logo-dark.png");
         vacancy.setRemuneration(mrPriceResponse.getCompensation());
+        vacancy.setWebViewViewable(false);
 
         if(!searchService.isExists(vacancy)){
             searchService.index(vacancy);

@@ -1,238 +1,280 @@
 package za.co.moxomo.crawlers;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.TimeZone;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.utils.Categoriser;
-import za.co.moxomo.utils.Util;
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import za.co.moxomo.crawlers.model.mrprice.MrPriceResponse;
+import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
+import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.services.SearchService;
 
-/**
- *
- * @author Paballo Ditshego
- */
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+@Component
 public class Careers24 {
 
-	private static HashSet<String> crawledUrls = new HashSet<String>();
-	private static String CAREERS24 = "http://www.careers24.com/jobs/job-search-results/?sort=dateposted&pagesize=100";
-	private static ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
-	private static HashSet<String> savedJobs = new HashSet<String>();
+	private static final Logger logger = LoggerFactory.getLogger(Careers24.class
+			.getCanonicalName());
+	private SearchService searchService;
 
-/*	public static void crawl() {
-
-		Careers24 c = new Careers24();
-		c.crawl(CAREERS24);
+	@Autowired
+	public Careers24(final SearchService searchService) {
+		this.searchService = searchService;
 	}
 
-	public void crawl(final String startUrl) {
+	@Scheduled(fixedDelay = 3600000, initialDelay = 0)
+	public void crawl() {
+		logger.info("Pnet crawl started at {} ", LocalDateTime.now());
+		long startTime = System.currentTimeMillis();
 
-		// Add the start URL to the list of URLs to crawl
-		urlsToCrawl.add(startUrl);
+		final HashSet<String> crawledUrls = new HashSet<>();
+		final HashSet<String> capturedOffers = new HashSet<>();
+		final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
 
-		// Search until the number of found URLs reaches 4000
-		while (urlsToCrawl.iterator().hasNext() && crawledUrls.size() < 15000) {
 
-			// Get the URL
+		for (int i = 1; i <10; i++) {
+			String url = (i == 1) ? "https://www.careers24.com/jobs/m-true/?sort=dateposted&pagesize=100" : "https://www.careers24.com/jobs/m-true/?sort=dateposted&pagesize=100".concat("&page=").concat(String.valueOf(i));
+			urlsToCrawl.add(url);
+
+		}
+		while (urlsToCrawl.iterator().hasNext()) {
 			String url = urlsToCrawl.iterator().next();
-
-			// Remove the URL from the list of URLs to crawl
-			urlsToCrawl.remove(url);
-
-			if (url != null) {
-
-				Document doc = null;
-				try {
-					doc = Jsoup
-							.connect(url)
-							.userAgent(// NB take note of userAgent
-									"Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19")
-							.followRedirects(true).timeout(0).get();
-				} catch (IOException e) {
-				}
-
-				if (doc != null) {
-
-					Elements links = doc.select("a");
-
-					for (Element link : links) {
-						String _link = link.attr("abs:href");
-						if (_link.length() < 1) {
-							continue;
-						}
-
-						int index = _link.indexOf('#');
-						if (index != -1) {
-							_link = _link.substring(0, index);
-						}
-
-						if (crawledUrls.contains(_link)) {
-							continue;
-						}
-						if (_link.toLowerCase().contains("search-results")) {
-							_link = _link.concat("&sort=dateposted");
-						}
-
-						// urls that contain add info
-						if (_link.toLowerCase().contains("search-results")
-								|| _link.toLowerCase().contains("adverts")) {
-
-							if (!urlsToCrawl.contains(_link)
-									&& !crawledUrls.contains(_link)) {
-
-								urlsToCrawl.add(_link);
-
-							}
-						}
-
-						if (url.contains("adverts")) {
-							String id = StringUtils.substringBetween(url,
-									"adverts/", "-").trim();
-							if (!savedJobs
-									.contains("http://m.careers24.com/job-detail/?vacancyid="
-											.concat(id))) {
-								Vacancy vacancy = createVacancy("http://m.careers24.com/job-detail/?vacancyid="
-										.concat(id));
-								if (vacancy != null) {
-									Util.save(vacancy);
-									savedJobs.add("http://m.careers24.com/job-detail/?vacancyid="
-											.concat(id));
-								}
-
-							}
-						}
-					}
-
-				}
+			urlsToCrawl.remove();
+			if (crawledUrls.contains(url)) {
+				continue;
 			}
 			crawledUrls.add(url);
+			if (Objects.nonNull(url)) {
+				logger.info("Crawling Pnet {}", url);
+				try {
+					Connection.Response response = Jsoup
+							.connect(url)
+							.ignoreHttpErrors(true)
+							.userAgent(
+									"Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
+							.timeout(60000).execute();
 
+					Document doc = response.parse();
+					if (Objects.nonNull(doc)) {
+						Elements links = doc.select("a");
+						for (Element link : links) {
+							String _link = link.attr("abs:href");
+							logger.info("absolute {}", _link);
+							if (_link.length() < 1) {
+								continue;
+							}
+							int index = _link.indexOf('#');
+							if (index != -1) {
+								_link = _link.substring(0, index);
+							}
+							if (urlsToCrawl.contains(_link) || crawledUrls.contains(_link)) {
+								logger.debug("Contains crawled url {}", _link);
+								continue;
+							}
+							// urls that contain add info
+							if (_link.toLowerCase().contains("/jobs/adverts/")
+							 && !_link.contains("?jobindex=")) {
+								urlsToCrawl.add(_link);
+							}
+						}
+						if (url.contains("/jobs/adverts/")){
+							//index document
+							Vacancy vacancy = createVacancy(url, doc);
+							if (!capturedOffers.contains(url) && !searchService.isExists(vacancy)) {
+								searchService.index(vacancy);
+								capturedOffers.add(vacancy.getOfferId());
+								logger.debug("Saved vacancy item with id {}", vacancy.getId());
+							}
+						}
+
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
+					continue;
+				}
+			}
 		}
+		long endTime = System.currentTimeMillis();
+		long executeTime = endTime - startTime;
+
+		logger.info("Pnet crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
 	}
 
-	private Vacancy createVacancy(String url) {
-
-		Vacancy vacancy = null;
-
-		Document document = null;
+	private Vacancy createVacancy(String url, Document doc) {
+		Objects.requireNonNull(url);
+		Objects.requireNonNull(doc);
+		Vacancy vacancy;
+		logger.info("Creating");
 		try {
-			document = Jsoup
-					.connect(url)
-					.userAgent(// NB take note of userAgent
-							"Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19")
-					.followRedirects(false).timeout(0).get();
-		} catch (IOException e) {
-		}
-		
-		String description = document
-				.getElementsByClass("job_detail_description").text().trim();
-		description = StringUtils.substringBefore(description, "Apply before");
-		String details = document.getElementsByClass("job_summary").text()
-				.trim();
-		String location = document.getElementsByClass("more_related_jobs")
-				.select("span[id=ContentPlaceHolder1_lblRelatedJobs]").text();
+			String jobTitle;
+			String description;
+			String company = null;
+			String location = null;
+			String date;
+			String remuneration = null;
+			String contractType = null;
+			String affirmativeAction = null;
+			String responsibilities = null;
+			String offerId = null;
+			String qualifications = null;
+			String imageUrl = null;
+			String additionalTokens = null;
+			Date advertDate = null;
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+			ObjectMapper mapper = new ObjectMapper();
 
-		String category = StringUtils.substringBetween(details,
-				"position in the", "sector");
-		if (category != null) {
-			category = category.trim();
-			if (category.contains(",")) {
-				category = StringUtils.substringBefore(category, ",");
+
+			jobTitle = doc.getElementsByClass("listingTitle").text()
+					.trim();
+
+			logger.debug("position dd: {}", jobTitle);
+			for (Element element : doc.getElementsByClass("listing__apply-now_bottom")) {
+				offerId = element.select("a").first().attr("data-offerid");
+				logger.debug("offerid {}", offerId);
 			}
-		} else {
-			return null;
-		}
-
-		String company = StringUtils.substringBetween(details, "Posted by",
-				"on");
-		if (company != null) {
-			company = company.trim();
-		} else {
-			return null;
-		}
-		String title = document.getElementsByClass("vm_job_detail").text()
-				.trim();
-		String logo = null;
-		Elements pic_elements = document.getElementsByTag("img");
-		for (Element element : pic_elements) {
-			if (element.attr("abs:src").contains("imageresource")) {
-				logo = element.attr("abs:src");
+			if (Objects.nonNull(doc.getElementById("company-intro"))) {
+				description = doc.getElementById("company-intro").text().trim();
+			} else {
+				description = jobTitle;
 			}
+			logger.debug("desc {}", description);
+			StringBuilder builder = new StringBuilder();
+			if (Objects.nonNull(doc.getElementById("job-tasks"))) {
+				for (Element responsibility : doc.getElementById("job-tasks").getAllElements()) {
+					builder.append(responsibility.text().trim()).append(System.getProperty("line.separator"));
+				}
+				responsibilities = builder.toString();
+				builder.setLength(0);
+				logger.debug("responsibilities {}", responsibilities);
+			}
+
+			if (Objects.nonNull(doc.getElementById("job-requim"))) {
+				for (Element qualification : doc.getElementById("job-requim").getAllElements()) {
+					builder.append(qualification.text().trim()).append(System.getProperty("line.separator"));
+				}
+				qualifications = builder.toString();
+				logger.debug("qualification {}", qualifications);
+				builder.setLength(0);
+			}
+			Elements companyInfo = doc.getElementsByClass("js-company-content-card");
+			for (Element el : companyInfo) {
+				if (el.hasAttr("data-logo")) {
+					imageUrl = el.attr("data-logo").trim();
+				}
+				if (el.hasAttr("data-name")) {
+					company = el.attr("data-name").trim();
+				}
+			}
+			if (Objects.isNull(company)) {
+				Elements elements = doc.getElementsByClass("at-listing-nav-company-name-link");
+				if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("title")) {
+					company = elements.first().attr("title");
+				}
+
+			}
+			if (Objects.isNull(imageUrl)) {
+				Elements elements = doc.getElementsByClass("js-sticky-bar");
+				if (Objects.nonNull(elements) && elements.first().hasAttr("data-settings")) {
+					AdditionalInfo additionalInfo = mapper.readValue(elements.first().attr("data-settings"), AdditionalInfo.class);
+					if (Objects.nonNull(additionalInfo.getLogoImageUrl()) && !additionalInfo.getLogoImageUrl().isEmpty()) {
+						imageUrl = "https://www.pnet.co.za".concat(additionalInfo.getLogoImageUrl());
+					} else {
+						imageUrl = "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+					}
+
+					jobTitle = additionalInfo.getJobTitle();
+
+				}
+
+			}
+			Elements listings = doc.getElementsByClass("listing-list");
+			for (Element element : listings) {
+				if (element.className().equals("listing-list at-listing__list-icons_location")) {
+					location = element.text();
+					continue;
+				}
+				if (element.className().equals("listing-list at-listing__list-icons_contract-type")) {
+					contractType = element.text();
+					continue;
+				}
+				if (element.className().equals("listing-list at-listing__list-icons_salary")) {
+					remuneration = element.text().trim();
+					continue;
+				}
+				if (element.className().equals("listing-list at-listing__list-icons_eeaa")) {
+					affirmativeAction = element.text().trim();
+					continue;
+				}
+				if (element.className().equals("listing-list at-listing__list-icons_date")) {
+					date = element.getAllElements().last().attr("data-date");
+					logger.debug("date {}", date);
+					advertDate = sdf.parse(date);
+					continue;
+				}
+			}
+			if (Objects.nonNull(doc.getElementsByClass("tokens-list__item__link"))) {
+				for (Element element : doc.getElementsByClass("tokens-list__item__link")) {
+					builder.append(element.text().trim()).append(", ");
+				}
+				additionalTokens = builder.toString();
+			}
+			if (Objects.isNull(jobTitle) || jobTitle.isEmpty()) {
+				logger.info("Else {}", url);
+				jobTitle = doc.getElementsByClass("listing__job-title").first().text();
+				company = doc.getElementsByClass("at-listing-nav-company-name-link").first().text();
+				location = doc.getElementsByClass("listing-list at-listing__list-icons_location").first().text();
+				date = doc.getElementsByClass("date-time-ago").first().attr("data-date");
+				description = doc.getElementsByClass("richtext").first().text();
+				advertDate = sdf.parse(date);
+				offerId = doc.getElementsByAttribute("data-offerid ").first().attr("data-offerid");
+				Elements elements = doc.select("a");
+
+				for (Element e : elements) {
+					if (e.hasAttr("style")) {
+						String attr = e.attr("style");
+						String image = (attr.substring(attr.indexOf("/"), attr.indexOf(")"))).replace("'", "").trim();
+						imageUrl = (Objects.nonNull(image) && !image.isEmpty()) ? "https://www.pnet.co.za".concat(image) :
+								"http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+						break;
+					}
+				}
+				logger.info("imageUrl {]", imageUrl);
+
+
+			}
+
+			vacancy = new Vacancy(jobTitle, description, offerId, company, location,
+					location, qualifications, responsibilities, advertDate,
+					contractType, (Objects.nonNull(imageUrl) && !imageUrl.contentEquals("https://www.pnet.co.za")) ? imageUrl : "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png", remuneration, "PNET", additionalTokens, affirmativeAction, url);
+			if (vacancy.getImageUrl().contentEquals("https://www.pnet.co.za/upload_za/logo/8/5281-logo.jpg")) {
+				vacancy.setImageUrl("http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png");
+			}
+		} catch (ParseException | IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-
-		if (logo == null || !logo.contains("imageresource")) {
-			logo = "http://m.careers24.com/images/logo.png";
-		}
-		
-
-		String date = StringUtils.substringBetween(
-				document.getElementsByClass("posted_by").text().trim(), "on",
-				"Reference").trim();
-
-		if (StringUtils.containsIgnoreCase(title, "learnership")) {
-			category = "Learnerships/Bursaries";
-		}
-		if (StringUtils.contains(title, "internship")
-				|| ((StringUtils.containsIgnoreCase(title, "intern") && !(StringUtils
-						.containsIgnoreCase(title, "internal")
-						|| !StringUtils.containsIgnoreCase(title,
-								"International") || !StringUtils
-							.containsIgnoreCase(title, "international"))))) {
-			category = "Internships";
-		}
-		if (StringUtils.containsIgnoreCase(title, "customer")) {
-			category = "Customer Service";
-		}
-
-		
-
-	//	vacancy = new Vacancy();
-
-		//vacancy.setAd_id(id);
-
-		SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
-		Date temp = null;
-		try {
-			temp = sdf.parse(date);
-		} catch (ParseException e) {
-			return null;
-		}
-		SimpleDateFormat formatter = new SimpleDateFormat(
-				"MMM dd, yyyy hh:mm:ss a");
-		formatter.setTimeZone(TimeZone.getTimeZone("GMT-2"));
-		Date today = null;
-		try {
-			today = formatter.parse(Calendar.getInstance().getTime()
-					.toLocaleString());
-		} catch (ParseException e) {
-		}
-
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.DATE, -1);
-
-		if (temp.before(c.getTime()) || Util.isAvailable(url)) {
-			savedJobs.add(url);
-			return null;
-
-		}
-		*//*vacancy.setAdvertDate(today);
-		c.add(Calendar.DATE, 33);
-		vacancy.setClosingDate(c.getTime());
-*//*
 		return vacancy;
-		}
-		*/
-	
-	
+	}
+
 
 }

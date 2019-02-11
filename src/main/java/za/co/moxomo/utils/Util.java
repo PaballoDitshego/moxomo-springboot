@@ -20,16 +20,16 @@ public class Util {
     public static boolean validate(Vacancy vacancy) {
         boolean valid = (Objects.nonNull(vacancy.getId())
                 && Objects.nonNull(vacancy.getId())
-                && Objects.nonNull(vacancy.getJobTitle())
-                && Objects.nonNull(vacancy.getDescription())
-                && Objects.nonNull(vacancy.getLocation())
+                && Objects.nonNull(vacancy.getJobTitle()) && !vacancy.getJobTitle().isEmpty()
+                && Objects.nonNull(vacancy.getDescription()) && !vacancy.getDescription().isEmpty()
+                && Objects.nonNull(vacancy.getLocation()) && !vacancy.getLocation().isEmpty()
                 && Objects.nonNull(vacancy.getAdvertDate())
-                && Objects.nonNull(vacancy.getImageUrl()))
-                && Objects.nonNull(vacancy.getUrl())
-                && Objects.nonNull(vacancy.getCompany())
-                && Objects.nonNull(vacancy.getOfferId());
+                && Objects.nonNull(vacancy.getImageUrl())) && !vacancy.getImageUrl().isEmpty()
+                && Objects.nonNull(vacancy.getUrl()) && !vacancy.getUrl().isEmpty()
+                && Objects.nonNull(vacancy.getCompany()) && !vacancy.getCompany().isEmpty()
+                && Objects.nonNull(vacancy.getOfferId()) && !vacancy.getOfferId().isEmpty();
         if (!valid) {
-            logger.info("Invalid {}", vacancy.getUrl());
+            logger.info("Invalid {}, Obje {}", vacancy.getUrl(), vacancy.toString());
         }
         return valid;
     }

@@ -5,7 +5,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
@@ -47,6 +46,7 @@ public class Vacancy {
     private String affirmativeAction;
     private String additionalTokens;
     private Date closingDate;
+    private boolean webViewViewable =true;
 
    public Vacancy(){
 
@@ -243,8 +243,18 @@ public class Vacancy {
         this.url = url;
     }
 
+    public boolean isWebViewViewable() {
+        return webViewViewable;
+    }
+
+    public void setWebViewViewable(boolean webViewViewable) {
+        this.webViewViewable = webViewViewable;
+    }
+
     public void setAffirmativeAction(String affirmativeAction) {
         this.affirmativeAction = affirmativeAction;
+
+
 
 
     }

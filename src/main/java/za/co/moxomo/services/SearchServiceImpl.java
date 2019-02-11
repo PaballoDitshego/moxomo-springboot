@@ -65,21 +65,21 @@ public class SearchServiceImpl implements SearchService {
         logger.info("Running query {}", searchString);
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate");
         final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
-                "advertDate", "imageUrl"}, null);
+                "advertDate", "imageUrl", "url", "webViewViewable"}, null);
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices("jobs")
                 .withQuery((Objects.isNull(searchString) || searchString.equals("")) ? matchAllQuery() :
                         multiMatchQuery(searchString)
-                                .field("jobTitle")
+                                .field("jobTitle", 10)
                                 .field("description")
                                 .field("additionalTokens")
                                 .field("responsibilities")
                                 .field("location")
-                                .field("company")
+                                .field("company", 5)
                                 .field("qualifications")
                                 .field("contractType")
                                 .operator(AND)
                                 .fuzziness(Fuzziness.AUTO)
-                                .prefixLength(3)
+                                .prefixLength(4)
                                 .type(MultiMatchQueryBuilder.Type.BEST_FIELDS))
                 .withSourceFilter(sourceFilter)
                 .withPageable(pageRequest)
