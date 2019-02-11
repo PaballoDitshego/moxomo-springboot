@@ -46,7 +46,7 @@ public class Careers24 {
 		final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
 
 
-		for (int i = 1; i <=15; i++) {
+		for (int i = 1; i <=5; i++) {
 			String url = (i == 1) ? "https://www.careers24.com/jobs/m-true/?sort=dateposted&pagesize=100" : "https://www.careers24.com/jobs/m-true/?sort=dateposted&pagesize=100".concat("&page=").concat(String.valueOf(i));
 			urlsToCrawl.add(url);
 
