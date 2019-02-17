@@ -84,7 +84,7 @@ public class Absa {
                 Vacancy vacancy = new Vacancy();
                 vacancy.setId(UUID.randomUUID().toString());
                 vacancy.setJobTitle(jobTitle);
-                vacancy.setCompany("Absa");
+                vacancy.setCompany("Absa Limited");
                 vacancy.setLocation(location);
                 vacancy.setUrl(url);
                 vacancy.setAdvertDate( Date.from(instant));

@@ -69,7 +69,7 @@ public class SearchServiceImpl implements SearchService {
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices("jobs")
                 .withQuery((Objects.isNull(searchString) || searchString.equals("")) ? matchAllQuery() :
                         multiMatchQuery(searchString)
-                                .field("jobTitle", 10)
+                                .field("jobTitle", 60)
                                 .field("description")
                                 .field("additionalTokens")
                                 .field("responsibilities")
@@ -80,7 +80,7 @@ public class SearchServiceImpl implements SearchService {
                                 .operator(AND)
                                 .fuzziness(Fuzziness.AUTO)
                                 .prefixLength(4)
-                                .type(MultiMatchQueryBuilder.Type.BEST_FIELDS))
+                                .type(MultiMatchQueryBuilder.Type.PHRASE))
                 .withSourceFilter(sourceFilter)
                 .withPageable(pageRequest)
                 .build();

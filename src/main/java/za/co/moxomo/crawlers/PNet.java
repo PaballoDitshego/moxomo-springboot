@@ -14,13 +14,15 @@ import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.services.SearchService;
-import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
@@ -28,7 +30,6 @@ public class PNet {
 
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
             .getCanonicalName());
-    private final String PNET = "http://www.pnet.co.za/jobs/all-jobs.html";
     private SearchService searchService;
 
     @Autowired
@@ -37,8 +38,7 @@ public class PNet {
     }
 
 
-    // @Scheduled(cron = "0 0 0/1 * * ?", initialDelay = 0)
-    @Scheduled(fixedDelay = 3600000, initialDelay = 0)
+    @Scheduled(fixedDelay = 900000, initialDelay = 0)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();

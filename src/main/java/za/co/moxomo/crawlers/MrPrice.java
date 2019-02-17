@@ -38,7 +38,7 @@ public class MrPrice {
         this.restTemplate = restTemplate;
     }
 
-    @Scheduled(fixedDelay=3600000, initialDelay = 0)
+    @Scheduled(fixedDelay=900000, initialDelay = 0)
     public void crawl() {
 
         logger.info("Crawling MrPrice started at {}", LocalDateTime.now());
