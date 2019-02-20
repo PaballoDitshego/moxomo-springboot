@@ -1,5 +1,5 @@
 
-package za.co.moxomo.crawlers.model.absa.response;
+package za.co.moxomo.crawlers.model.absa;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
