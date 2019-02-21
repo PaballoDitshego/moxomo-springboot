@@ -20,111 +20,111 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class ClosingDate {
 
     @JsonProperty("date")
-    private Integer date;
+    private Long date;
     @JsonProperty("day")
-    private Integer day;
+    private Long day;
     @JsonProperty("hours")
-    private Integer hours;
+    private Long hours;
     @JsonProperty("minutes")
-    private Integer minutes;
+    private Long minutes;
     @JsonProperty("month")
-    private Integer month;
+    private Long month;
     @JsonProperty("seconds")
-    private Integer seconds;
+    private Long seconds;
     @JsonProperty("time")
-    private Integer time;
+    private Long time;
     @JsonProperty("timezoneOffset")
-    private Integer timezoneOffset;
+    private Long timezoneOffset;
     @JsonProperty("year")
-    private Integer year;
+    private Long year;
 
     @JsonProperty("date")
-    public Integer getDate() {
+    public Long getDate() {
         return date;
     }
 
     @JsonProperty("date")
-    public void setDate(Integer date) {
+    public void setDate(Long date) {
         this.date = date;
     }
 
     @JsonProperty("day")
-    public Integer getDay() {
+    public Long getDay() {
         return day;
     }
 
     @JsonProperty("day")
-    public void setDay(Integer day) {
+    public void setDay(Long day) {
         this.day = day;
     }
 
     @JsonProperty("hours")
-    public Integer getHours() {
+    public Long getHours() {
         return hours;
     }
 
     @JsonProperty("hours")
-    public void setHours(Integer hours) {
+    public void setHours(Long hours) {
         this.hours = hours;
     }
 
     @JsonProperty("minutes")
-    public Integer getMinutes() {
+    public Long getMinutes() {
         return minutes;
     }
 
     @JsonProperty("minutes")
-    public void setMinutes(Integer minutes) {
+    public void setMinutes(Long minutes) {
         this.minutes = minutes;
     }
 
     @JsonProperty("month")
-    public Integer getMonth() {
+    public Long getMonth() {
         return month;
     }
 
     @JsonProperty("month")
-    public void setMonth(Integer month) {
+    public void setMonth(Long month) {
         this.month = month;
     }
 
     @JsonProperty("seconds")
-    public Integer getSeconds() {
+    public Long getSeconds() {
         return seconds;
     }
 
     @JsonProperty("seconds")
-    public void setSeconds(Integer seconds) {
+    public void setSeconds(Long seconds) {
         this.seconds = seconds;
     }
 
     @JsonProperty("time")
-    public Integer getTime() {
+    public Long getTime() {
         return time;
     }
 
     @JsonProperty("time")
-    public void setTime(Integer time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
     @JsonProperty("timezoneOffset")
-    public Integer getTimezoneOffset() {
+    public Long getTimezoneOffset() {
         return timezoneOffset;
     }
 
     @JsonProperty("timezoneOffset")
-    public void setTimezoneOffset(Integer timezoneOffset) {
+    public void setTimezoneOffset(Long timezoneOffset) {
         this.timezoneOffset = timezoneOffset;
     }
 
     @JsonProperty("year")
-    public Integer getYear() {
+    public Long getYear() {
         return year;
     }
 
     @JsonProperty("year")
-    public void setYear(Integer year) {
+    public void setYear(Long year) {
         this.year = year;
     }
 
