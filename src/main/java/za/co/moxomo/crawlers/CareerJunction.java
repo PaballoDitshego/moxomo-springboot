@@ -1,8 +1,25 @@
 package za.co.moxomo.crawlers;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jsoup.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
+import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.services.SearchService;
 import za.co.moxomo.utils.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -14,101 +31,141 @@ import org.jsoup.select.Elements;
 /**
  * @author Paballo
  */
+@Component
 public class CareerJunction {
-    //crawls careerjunction.co.za
 
-    private static HashSet<String> crawledUrls = new HashSet<String>();
+    private static String CAREER = "https://www.careerjunction.co.za/jobs/results?sort=newest";
+    private static final Logger logger = LoggerFactory.getLogger(CareerJunction.class);
+    private SearchService searchService;
 
-
-    private static String CAREER = "http://www.careerjunction.co.za";
-
-    private static ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<String>();
-
-/*    public static void crawl() {
-        CareerJunction c = new CareerJunction();
-        c.crawl(CAREER);
+    @Autowired
+    public CareerJunction(final SearchService searchService) {
+        this.searchService = searchService;
     }
 
+    @Scheduled(fixedDelay = 900000, initialDelay = 1200000)
+    public void crawl() {
+        logger.info("CareerJunction crawl started at {} ", LocalDateTime.now());
+        long startTime = System.currentTimeMillis();
 
-    public void crawl(final String startUrl) {
+        final HashSet<String> crawledUrls = new HashSet<>();
+        final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
+        for (int i = 1; i <= 10; i++) {
+            String url = (i == 1) ? CAREER : CAREER.concat("&page=").concat(String.valueOf(i));
+            urlsToCrawl.add(url);
 
-        // Add the start URL to the list of URLs to crawl
-        urlsToCrawl.add(startUrl);
-
-        // Search until the number of found URLs reaches 2000
-        while (!urlsToCrawl.isEmpty() && crawledUrls.size() < 2000) {
-
-            // Get the URL
+        }
+        while (urlsToCrawl.iterator().hasNext()) {
             String url = urlsToCrawl.iterator().next();
-
-            // Remove the URL from the list of URLs to crawl
-            urlsToCrawl.remove(url);
-
-            // Verify and convert the URL string to the URL object
-
-
-            if (url != null) {
-
-                // Download the page at the URL
-                // String pageContent = fetchPageContent(verifiedUrl);
-                Document doc = null;
+            urlsToCrawl.remove();
+            if (crawledUrls.contains(url)) {
+                continue;
+            }
+            crawledUrls.add(url);
+            if (Objects.nonNull(url)) {
+                logger.info("Crawling CareerJunction {}", url);
                 try {
-                    doc = Jsoup.connect(url).timeout(0).get();
-                } catch (Exception e) {
-                }
+                    Connection.Response response = Jsoup
+                            .connect(url)
+                            .ignoreHttpErrors(true)
+                            .userAgent(
+                                    "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
+                            .timeout(60000).execute();
 
-                if (doc != null) {
-
-                    Elements links = doc.select("a[href]");
-
-                    for (Element link : links) {
-                        String _link = link.attr("abs:href");
-                        if (_link.length() < 1) {
-                            continue;
+                    Document doc = response.parse();
+                    if (Objects.nonNull(doc)) {
+                        Elements links = doc.select("a");
+                        for (Element link : links) {
+                            String _link = link.attr("abs:href");
+                            if (_link.length() < 1) {
+                                continue;
+                            }
+                            int index = _link.indexOf('#');
+                            if (index != -1) {
+                                _link = _link.substring(0, index);
+                            }
+                            if (urlsToCrawl.contains(_link) || crawledUrls.contains(_link)) {
+                                logger.debug("Contains crawled url {}", _link);
+                                continue;
+                            }
+                            // urls that contain add info
+                            if (_link.toLowerCase().contains("/jobs/view")
+                            ) {
+                                urlsToCrawl.add(_link);
+                            }
                         }
-
-                        int index = _link.indexOf('#');
-                        if (index != -1) {
-                            _link = _link.substring(0, index);
-                        }
-
-                        if (crawledUrls.contains(_link)) {
-                            continue;
-                        }
-                        if (urlsToCrawl.contains(_link)) {
-                            continue;
-                        }
-                        if (_link.toLowerCase().contains("/my/account/")) {
-                            continue;
-                            // urlsToCrawl.
-                        }
-                        if (_link.toLowerCase().contains("-jobs")
-                                || _link.toLowerCase().contains("/jobs/")) {
-
-                            urlsToCrawl.add(_link);
-                            // urlsToCrawl.
-                        }
-
-                    }
-
-                    if (url.contains("/jobs/")) {
-                        if (url.contains("?searchkey")) {
-                            String ref = StringUtils.substringBetween(url, "-",
-                                    "?searchkey").trim();
-                            String mobi_url = "http://m.careerjunction.co.za/advert/view.htm?ref=" + ref;
-                            if (!Util.isAvailable(mobi_url)) {
-
+                        if (url.contains("/jobs/view")) {
+                            //index document
+                            Vacancy vacancy = createVacancy(url, doc);
+                            if (!searchService.isExists(vacancy)) {
+                                searchService.index(vacancy);
+                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
                         }
 
                     }
-
-                    crawledUrls.add(url);
-
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
+                    continue;
                 }
             }
         }
+        long endTime = System.currentTimeMillis();
+        long executeTime = endTime - startTime;
 
-    }*/
+        logger.info("CareerJunction crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
+    }
+
+    private Vacancy createVacancy(String url, Document doc) {
+        Objects.requireNonNull(url);
+        Objects.requireNonNull(doc);
+        Vacancy vacancy;
+        logger.info("Creating");
+        try {
+            String jobTitle;
+            String description;
+            String company;
+            String location;
+            String date;
+            String remuneration = null;
+            String contractType = null;
+            String affirmativeAction = null;
+            String responsibilities = null;
+            String offerId;
+            String qualifications = null;
+            String imageUrl;
+            String additionalTokens;
+            Date advertDate;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+
+
+            jobTitle = StringUtils.substringBefore(doc.select("meta[property=og:title]").first()
+                    .attr("content").trim(), " at ");
+            imageUrl = doc.select("meta[property=og:image]").first()
+                    .attr("content").trim();
+            location = doc.select("div.cardSummary").first().selectFirst("li:nth-child(2)").text();
+            offerId = doc.select("div.cardSummary").get(1).selectFirst("li:nth-child(1").text();
+            offerId = (offerId.contains("|")) ? StringUtils.substringBetween(offerId, "Job ", "|").trim()
+                    : StringUtils.substringAfter(offerId, "Job").trim();
+
+            date = StringUtils.substringBetween(doc.select("div.cardSummary").get(1).selectFirst("li:nth-child(2").text(), "Posted", "by").trim();
+
+            advertDate = sdf.parse(date);
+            company = StringUtils.substringAfter(doc.select("div.cardSummary").get(1).selectFirst("li:nth-child(2").text(), " by");
+            description = StringUtils.substringBefore(doc.select("div.contentText").get(0).text().replace("About the Position", "").trim(), "Education:");
+            additionalTokens = doc.select("div.contentText").get(0).text().replace("About the Position", "").trim();
+            
+            vacancy = new Vacancy(jobTitle, description, offerId, company, location,
+                    location, qualifications, responsibilities, advertDate,
+                    contractType, imageUrl, remuneration, "CAREERJUNCTION", additionalTokens, affirmativeAction, url);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return vacancy;
+    }
 
 }

@@ -56,23 +56,23 @@ public class Vacancy {
                    String contractType, String imageUrl, String remuneration, String source, String additionalTokens, String affirmativeAction,String url) {
 
         this.id= UUID.randomUUID().toString();
-        this.jobTitle = jobTitle;
-        this.description = description;
-        this.offerId = offerId;
-        this.company = company;
-        this.location = location;
+        this.jobTitle = jobTitle.trim();
+        this.description = description.trim();
+        this.offerId = offerId.trim();
+        this.company = company.trim();
+        this.location = location.trim();
         this.province = province;
         this.qualifications = qualifications;
         this.responsibilities = responsibilities;
         this.advertDate = advertDate;
         this.contractType = contractType;
-        this.imageUrl = imageUrl;
+        this.imageUrl = imageUrl.trim();
         this.remuneration = remuneration;
         this.source = source;
         this.link=url;
         this.additionalTokens = additionalTokens;
         this.affirmativeAction=affirmativeAction;
-        this.url=url;
+        this.url=url.trim();
     }
 
     public String getId() {

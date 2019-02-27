@@ -207,4 +207,25 @@ public class DiscoveryResponse {
         this.id = id;
     }
 
+
+    @Override
+    public String toString() {
+        return "DiscoveryResponse{" +
+                "sourceSystem='" + sourceSystem + '\'' +
+                ", referenceNumber='" + referenceNumber + '\'' +
+                ", positionType='" + positionType + '\'' +
+                ", businessUnit='" + businessUnit + '\'' +
+                ", department='" + department + '\'' +
+                ", closingDate=" + closingDate +
+                ", positionDescription='" + positionDescription + '\'' +
+                ", positionRequirements='" + positionRequirements + '\'' +
+                ", positionQualifications='" + positionQualifications + '\'' +
+                ", function=" + function +
+                ", location='" + location + '\'' +
+                ", province='" + province + '\'' +
+                ", experience='" + experience + '\'' +
+                ", applicationUrl='" + applicationUrl + '\'' +
+                ", id=" + id +
+                '}';
+    }
 }

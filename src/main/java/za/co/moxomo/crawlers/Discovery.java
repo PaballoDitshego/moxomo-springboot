@@ -28,10 +28,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class Discovery {
@@ -49,7 +46,7 @@ public class Discovery {
     }
 
 
-    @Scheduled(fixedDelay=900000, initialDelay = 900000)
+    @Scheduled(fixedDelay=900000, initialDelay = 0)
     public void crawl() {
 
         logger.info("Crawling Discovery started at {}", LocalDateTime.now());
@@ -66,7 +63,7 @@ public class Discovery {
         ResponseEntity<List<DiscoveryResponse>> responseEntity = restTemplate.exchange(ENDPOINT, HttpMethod.POST,
                 request, new ParameterizedTypeReference<List<DiscoveryResponse>>() {
                 });
-        logger.debug("DiscoveryResponse {}", responseEntity.getBody().toString());
+        logger.info("DiscoveryResponse {}", responseEntity.getBody().toString());
         List<DiscoveryResponse> response = responseEntity.getBody();
         for (DiscoveryResponse discoveryResponse : response) {
             try {
@@ -96,6 +93,7 @@ public class Discovery {
 
         Vacancy vacancy = new Vacancy();
         vacancy.setOfferId(offerId);
+        vacancy.setId(UUID.randomUUID().toString());
         vacancy.setUrl(discoveryResponse.getApplicationUrl());
         vacancy.setJobTitle(position);
         vacancy.setLocation(location);
@@ -103,15 +101,17 @@ public class Discovery {
         vacancy.setImageUrl(imageUrl);
         setAdditionalData(vacancy);
 
+        logger.info("vacancy {}", vacancy.toString());
+
         if(!searchService.isExists(vacancy)){
             searchService.index(vacancy);
         }
-
 
     }
 
     private  void setAdditionalData(Vacancy vacancy) throws IOException, DecoderException, ParseException {
         Objects.requireNonNull(vacancy);
+        logger.info(vacancy.getUrl());
 
         Connection.Response response = Jsoup
                 .connect(vacancy.getUrl())
@@ -123,6 +123,7 @@ public class Discovery {
         Document doc = response.parse();
         String date = StringUtils.substringBetween( doc.getElementsContainingText("Posted").first().text(),
                 "Posted", "-").trim();
+
         String description=StringUtils.substringBetween(doc.getElementsByClass("joqReqDescription").first().text(),
                 "Key Purpose", "Areas of responsibility may include but not limited to").trim();
 
