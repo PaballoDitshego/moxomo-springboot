@@ -2,6 +2,7 @@ package za.co.moxomo.services;
 
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.percolator.PercolateQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.model.wrapper.SearchResponse;
-import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
+import za.co.moxomo.repository.VacancySearchRepository;
 import za.co.moxomo.utils.Util;
 
 import java.util.Objects;
@@ -84,6 +85,8 @@ public class SearchServiceImpl implements SearchService {
                 .withSourceFilter(sourceFilter)
                 .withPageable(pageRequest)
                 .build();
+
+        PercolateQueryBuilder percolateQuery = null;
 
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
         logger.debug("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
