@@ -38,10 +38,7 @@ import za.co.moxomo.model.wrapper.SearchResults;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.utils.Util;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
@@ -75,10 +72,10 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         if (!Util.validate(vacancy)) {
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
-        try{
-        vacancy = vacancySearchRepository.save(vacancy);
-        performPercolationQuery(vacancy);}
-        catch (Exception e){
+        try {
+            vacancy = vacancySearchRepository.save(vacancy);
+            performPercolationQuery(vacancy);
+        } catch (Exception e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
 
             logger.error(timeMarker, objectMapper.writeValueAsString(vacancy), e);
@@ -107,44 +104,37 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
                     searchString, "jobTitle^0.8", "description", "additionalTokens", "responsibilities", "location", "company^0.8", "qualifications")
-                   .type(MultiMatchQueryBuilder.Type.PHRASE).lenient(true).autoGenerateSynonymsPhraseQuery(true);
+                    .type(MultiMatchQueryBuilder.Type.PHRASE).lenient(true).autoGenerateSynonymsPhraseQuery(true);
         }
         final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "5h", "5" +
                 "h", 0.75);
-
-        final FunctionScoreQueryBuilder query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString))?multiMatchQuery.minimumShouldMatch("2") :matchAllQuery(), gaussDecayFunctionBuilder);
+        final FunctionScoreQueryBuilder query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), gaussDecayFunctionBuilder);
         query.boostMode(CombineFunction.MULTIPLY);
-
-
-
 
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit);
         final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
                 "advertDate", "imageUrl", "url", "webViewViewable", "company"}, null);
-
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices(JOBS)
                 .withQuery(query)
                 .withSourceFilter(sourceFilter)
-                .withPageable(pageRequest)
+                .withPageable(Objects.isNull(searchString) ?
+                        PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate") : pageRequest)
                 .build();
-
-
-
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
         logger.debug("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
         int totalNumberOfPages = 1;
         if (totalNumberOfElements > 0) {
             totalNumberOfPages = (totalNumberOfElements / limit) == 0 ? 1 : (totalNumberOfElements / limit);
         }
-        final Page<Vacancy> vacancies= vacancySearchRepository.search(searchQuery);
+        final Page<Vacancy> vacancies = vacancySearchRepository.search(searchQuery);
 
-        return new SearchResults(offset, totalNumberOfPages, vacancies.getContent());
+        return new SearchResults(offset,vacancies.getTotalElements(), totalNumberOfPages, vacancies.getContent());
     }
 
     @Override
     public void deleteOldVacancies() {
         logger.info("Deleting vacancies older that 30 days. The number of vacancies before deletion is {}", vacancySearchRepository.count());
-        LocalDate localDate = (Instant.now().minus(Duration.ofDays(31))).atZone(ZoneId.of("Africa/Johannesburg")).toLocalDate();
+        LocalDateTime localDate = LocalDateTime.now().minus(Duration.ofDays(31)).atZone(ZoneId.of("Africa/Johannesburg")).toLocalDateTime();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss");
         String date = localDate.format(dateTimeFormatter);
 

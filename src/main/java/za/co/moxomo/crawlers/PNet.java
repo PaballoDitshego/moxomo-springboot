@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.services.VacancySearchService;
-import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;

@@ -77,6 +77,9 @@ public class CareerJunction {
                             if (_link.length() < 1) {
                                 continue;
                             }
+                            if (_link.contains("?unmask[]=email")){
+                                _link = _link.replace("?unmask[]=email", "").trim();
+                            }
                             int index = _link.indexOf('#');
                             if (index != -1) {
                                 _link = _link.substring(0, index);
@@ -86,8 +89,7 @@ public class CareerJunction {
                                 continue;
                             }
                             // urls that contain add info
-                            if (_link.toLowerCase().contains("/jobs/view")
-                            ) {
+                            if (_link.toLowerCase().contains("/jobs/view")) {
                                 urlsToCrawl.add(_link);
                             }
                         }
