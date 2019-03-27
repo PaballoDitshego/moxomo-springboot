@@ -1,31 +1,22 @@
 package za.co.moxomo.services;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import za.co.moxomo.config.security.JwtTokenProvider;
-import za.co.moxomo.exception.CustomException;
+import org.springframework.stereotype.Service;
 import za.co.moxomo.model.User;
 import za.co.moxomo.repository.mongodb.UserRepository;
 
 
-@Component
-public class UserService implements UserDetailsService {
+@Service
+public class UserDetailService implements UserDetailsService {
 
 
     private UserRepository userRepository;
 
-
-    private PasswordEncoder passwordEncoder;
-
-
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserDetailService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -43,17 +34,6 @@ public class UserService implements UserDetailsService {
                 .credentialsExpired(false)
                 .disabled(false)
                 .build();
-    }
 
-    public User signup(User user) {
-        if (null == userRepository.findByUsername(user.getUsername())) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-            userRepository.save(user);
-            return user;
-        } else {
-          //  throw new RuntimeException();
-           throw new CustomException("Username is already in use", HttpStatus.UNPROCESSABLE_ENTITY);
-        }
     }
 }

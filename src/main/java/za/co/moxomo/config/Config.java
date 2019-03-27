@@ -1,6 +1,8 @@
 package za.co.moxomo.config;
 
 import com.mongodb.MongoClient;
+import org.apache.catalina.connector.Connector;
+
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -10,7 +12,10 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -26,11 +31,17 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import za.co.moxomo.exception.MoxomoResponseErrorHandler;
 
 import java.net.InetAddress;
-
 import static org.apache.http.conn.params.ConnManagerParams.DEFAULT_MAX_TOTAL_CONNECTIONS;
 import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIONS_PER_ROUTE;
 
@@ -39,7 +50,7 @@ import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIO
 @EnableMongoRepositories(basePackages = {"za.co.moxomo.repository.mongodb"})
 @IntegrationComponentScan
 @EnableIntegration
-//@EnableSwagger2
+@EnableSwagger2
 public class Config {
 
     private static final String VACANCIES="vacancies";
@@ -56,13 +67,35 @@ public class Config {
     @Value("${elasticsearch.port}")
     private Integer SEARCH_PORT;
 
+
+    @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainer() {
+        return server -> {
+            if (server instanceof TomcatServletWebServerFactory) {
+                server.addAdditionalTomcatConnectors(redirectConnector());
+            }
+        };
+    }
+
+    private Connector redirectConnector() {
+        Connector connector = new Connector("AJP/1.3");
+        connector.setScheme("http");
+        connector.setPort(9090);
+        connector.setSecure(false);
+        connector.setAllowTrace(false);
+        return connector;
+
+    }
+
     @Bean
     public MongoClient mongoClient() {
         return new MongoClient(DBHost, DBPort);
     }
 
+
+
     @Bean
-    public MongoTemplate mongoTemplate() throws Exception {
+    public MongoTemplate mongoTemplate()  {
         return new MongoTemplate(mongoClient(), VACANCIES);
     }
     @Bean
@@ -121,12 +154,22 @@ public class Config {
         return threadPoolTaskScheduler;
     }
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  /*  @Bean
+
+    @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any()).build();
-    }*/
+    }
+
+    @Bean
+    public ModelMapper modelMapper(){
+        return new ModelMapper();
+    }
 
 
 

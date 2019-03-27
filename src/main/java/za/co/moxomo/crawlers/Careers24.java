@@ -9,10 +9,11 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -24,16 +25,17 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "careers24", havingValue="true")
 public class Careers24 {
 
     private static final Logger logger = LoggerFactory.getLogger(Careers24.class
             .getCanonicalName());
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
 
     @Autowired
-    public Careers24(final SearchService searchService) {
-        this.searchService = searchService;
+    public Careers24(final VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
     @Scheduled(fixedDelay = 900000, initialDelay = 0)
@@ -92,8 +94,9 @@ public class Careers24 {
                         if (url.contains("/jobs/adverts/")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            if (!searchService.isExists(vacancy)) {
-                                searchService.index(vacancy);
+                            if (!vacancySearchService.isExists(vacancy)) {
+
+                                vacancySearchService.index(vacancy);
                                 logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
 

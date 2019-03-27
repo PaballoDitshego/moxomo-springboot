@@ -15,20 +15,20 @@ public class XmppMessageTransformer {
     private static final String TOPICS = "/topics/";
 
 
-    @Transformer(inputChannel = "gcmOutboundChannel", outputChannel = "gcmXmppOutboundChannel")
+    @Transformer(inputChannel = "fcmOutboundChannel", outputChannel = "fcmXmppOutboundChannel")
     public Message<org.jivesoftware.smack.packet.Message> transform(Message message) throws Exception {
 
-        /*Message<org.jivesoftware.smack.packet.Message> gcmMessage;
-        if(message.getPayload() instanceof Notification){
-            Notification notification = (Notification) message.getPayload();
+        Message<org.jivesoftware.smack.packet.Message> gcmMessage = null;
+        /*if(message.getPayload() instanceof Notification){
+          Notification notification = (Notification) message.getPayload();
             gcmMessage = constructGcmMessage(notification);
             log.debug("Message with id {}, transformed to {}", notification.getUid(),
                     gcmMessage != null && gcmMessage.getPayload() != null ? gcmMessage.getPayload().toXML().toString() : "null");
         }else{
             gcmMessage = GcmXmppMessageCodec.encode(TOPICS.concat("keepalive"), UIDGenerator.generateId(), null);
-        }
-        return gcmMessage;*/
-        return null;
+        }*/
+        return gcmMessage;
+
     }
 
 

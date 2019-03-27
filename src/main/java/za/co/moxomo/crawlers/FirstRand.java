@@ -5,37 +5,36 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.JSoupTest;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "firstrand", havingValue="true")
 public class FirstRand {
 
     private static final Logger logger = LoggerFactory.getLogger(FirstRand.class);
     private static final String RMB = "https://www.firstrandjobs.mobi/Jobs/List";
     private static final String RMB_DETAIL_URL = "https://www.firstrandjobs.mobi/Jobs/Detail?refNumber=";
 
-    private final SearchService searchService;
+    private final VacancySearchService vacancySearchService;
 
     @Autowired
-    public FirstRand(SearchService searchService) {
-        this.searchService = searchService;
+    public FirstRand(VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
     @Scheduled(fixedDelay=3600000, initialDelay = 600000)
@@ -101,7 +100,7 @@ public class FirstRand {
     private void getJobDetail(Vacancy vacancy) {
         Objects.requireNonNull(vacancy.getOfferId());
 
-       if (!searchService.isExists(vacancy)) {
+       if (!vacancySearchService.isExists(vacancy)) {
             String url = RMB_DETAIL_URL.concat(vacancy.getOfferId());
             logger.info("Crawling FNB {}", url);
             logger.debug("url {}", url);
@@ -149,11 +148,12 @@ public class FirstRand {
 
                         logger.debug("responsibilities {}", builder.toString());
 
-                        searchService.index(vacancy);
+                        vacancySearchService.index(vacancy);
                     }
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
 
             }

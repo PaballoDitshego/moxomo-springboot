@@ -11,12 +11,13 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.absa.AbsaResponse;
 import za.co.moxomo.crawlers.model.absa.RequisitionList;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
@@ -31,21 +32,22 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "absa", havingValue="true")
 public class Absa {
 
     private static final Logger logger = LoggerFactory.getLogger(Absa.class);
     private static final String jobUrl = "https://barclays.taleo.net/careersection/ejb/jobdetail.ftl?job=";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
     @Autowired
-    public Absa(SearchService searchService){
-        this.searchService=searchService;
+    public Absa(VacancySearchService vacancySearchService){
+        this.vacancySearchService = vacancySearchService;
     }
 
 
-    @Scheduled(fixedDelay=3600000, initialDelay = 600000)
+    @Scheduled(fixedDelay=3600000, initialDelay = 0)
     public void crawl() {
 
         logger.info("Crawling Absa started at {}", LocalDateTime.now());
@@ -97,12 +99,12 @@ public class Absa {
                     continue;
                 }
                 Util.validate(vacancy);
-                if (!searchService.isExists(vacancy)) {
-                    searchService.index(vacancy);
+                if (!vacancySearchService.isExists(vacancy)) {
+                    vacancySearchService.index(vacancy);
                 }
             }
 
-        } catch (IOException | ParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         long endTime = System.currentTimeMillis();

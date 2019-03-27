@@ -4,14 +4,14 @@ import za.co.moxomo.model.Vacancy;
 
 import java.util.List;
 
-public class SearchResponse extends  ResponseWrapper{
+public class SearchResults extends  ResponseWrapper{
 
     private int page;
     private long totalPages;
     List<Vacancy> vacancies;
 
 
-    public SearchResponse(int page, long totalPages, List<Vacancy> vacancies) {
+    public SearchResults(int page, long totalPages, List<Vacancy> vacancies) {
         this.page = page;
         this.totalPages = totalPages;
         this.vacancies = vacancies;

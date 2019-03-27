@@ -1,19 +1,22 @@
 package za.co.moxomo.services;
 
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.model.wrapper.SearchResponse;
+import za.co.moxomo.model.wrapper.SearchResults;
 
-/**
- * Created by paballo on 2017/02/20.
- */
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
-public interface SearchService {
 
-    Vacancy index(Vacancy vacancy);
+public interface VacancySearchService {
+
+    Vacancy index(Vacancy vacancy) throws Exception;
 
     Vacancy getVacancy(String id);
 
     boolean isExists(Vacancy vacancy);
 
-    SearchResponse search(String searchString, int offset, int limit);
+    SearchResults search(String searchString, int offset, int limit);
+
+    void deleteOldVacancies();
 }

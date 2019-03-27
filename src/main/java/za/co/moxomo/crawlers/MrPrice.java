@@ -6,6 +6,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import za.co.moxomo.crawlers.model.mrprice.MrPriceResponse;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -24,17 +25,18 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "mrprice", havingValue="true")
 public class MrPrice {
 
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);
     private static final String ENDPOINT = "https://mrpcareers.azurewebsites.net/csod.json";
     private  static final String MOBILE_URL="https://yourjourney.csod.com/m/ats/careersite/index.html?site=4&c=yourjourney&lang=en-US&#jobRequisitions/";
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
     private RestTemplate restTemplate;
 
     @Autowired
-    public MrPrice(SearchService searchService, RestTemplate restTemplate) {
-        this.searchService =searchService;
+    public MrPrice(VacancySearchService vacancySearchService, RestTemplate restTemplate) {
+        this.vacancySearchService = vacancySearchService;
         this.restTemplate = restTemplate;
     }
 
@@ -67,7 +69,7 @@ public class MrPrice {
 
     }
 
-    private void createVacancy(MrPriceResponse mrPriceResponse) {
+    private void createVacancy(MrPriceResponse mrPriceResponse) throws Exception {
 
         String position = mrPriceResponse.getPosition();
         logger.debug("position {}", position);
@@ -108,8 +110,8 @@ public class MrPrice {
         vacancy.setRemuneration(mrPriceResponse.getCompensation());
         vacancy.setWebViewViewable(false);
 
-        if(!searchService.isExists(vacancy)){
-            searchService.index(vacancy);
+        if(!vacancySearchService.isExists(vacancy)){
+            vacancySearchService.index(vacancy);
         }
     }
 

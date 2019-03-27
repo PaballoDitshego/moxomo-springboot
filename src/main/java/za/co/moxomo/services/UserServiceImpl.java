@@ -13,7 +13,7 @@ import za.co.moxomo.model.User;
 import za.co.moxomo.repository.mongodb.UserRepository;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
@@ -26,7 +26,8 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public String signin(String username, String password) {
+    @Override
+    public String authenticate(String username, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
@@ -35,7 +36,8 @@ public class UserService {
         }
     }
 
-    public String signup(User user) {
+    @Override
+    public String registerUser(User user) {
         if (null == userRepository.findByUsername(user.getUsername())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
@@ -45,15 +47,8 @@ public class UserService {
         }
     }
 
-    public User search(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new CustomException("The user doesn't exist", HttpStatus.NOT_FOUND);
-        }
-        return user;
-    }
 
-
+    @Override
     public String refresh(String username) {
         return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
     }

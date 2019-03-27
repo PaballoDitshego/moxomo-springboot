@@ -9,11 +9,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
+import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -26,27 +28,25 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "pnet", havingValue="true")
 public class PNet {
 
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
             .getCanonicalName());
-    private SearchService searchService;
+
+    private VacancySearchService vacancySearchService;
 
     @Autowired
-    public PNet(final SearchService searchService) {
-        this.searchService = searchService;
+    public PNet(final VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
-
-    @Scheduled(fixedDelay = 900000, initialDelay = 0)
+    @Scheduled(fixedDelay = 900000, initialDelay = 600000)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
-
         final HashSet<String> crawledUrls = new HashSet<>();
-        final HashSet<String> capturedOffers = new HashSet<>();
         final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
-
 
         for (int i = 0; i <= 400; i += 25) {
             String url = (i == 0) ? "https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1" : "https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
@@ -96,18 +96,76 @@ public class PNet {
                         if (url.contains("jobs--") && url.contains("inline")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            if (!capturedOffers.contains(url) && !searchService.isExists(vacancy)) {
+                           if (!vacancySearchService.isExists(vacancy)) {
                                 if (vacancy.getCompany().contains("Communicate")) {
                                     continue;
                                 }
-                                searchService.index(vacancy);
-                                capturedOffers.add(vacancy.getOfferId());
+                                vacancySearchService.index(vacancy);
                                 logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
+
                         }
 
                     }
                 } catch (Exception e) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
                     continue;
@@ -260,6 +318,17 @@ public class PNet {
                 }
                 logger.info("imageUrl {]", imageUrl);
 
+
+            }
+            if(description == null || description.equals("")){
+                description = doc.getElementsByClass("richtext").first().text();
+                int noRichText = doc.getElementsByClass("richtext").size();
+                if(noRichText>1) {
+                    responsibilities = doc.getElementsByClass("richtext").get(1).text();
+                }
+                if(noRichText>2) {
+                    qualifications = doc.getElementsByClass("richtext").get(2).text();
+                }
 
             }
 

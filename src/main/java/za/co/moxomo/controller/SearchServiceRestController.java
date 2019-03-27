@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import za.co.moxomo.model.Vacancy;
 import za.co.moxomo.model.wrapper.ResponseWrapper;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -21,12 +21,12 @@ public class SearchServiceRestController {
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceRestController.class);
 
     private TaskExecutor asyncExecutor;
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
     @Autowired
-    public SearchServiceRestController(TaskExecutor asyncExecutor, SearchService searchService) {
+    public SearchServiceRestController(TaskExecutor asyncExecutor, VacancySearchService vacancySearchService) {
         this.asyncExecutor = asyncExecutor;
-        this.searchService = searchService;
+        this.vacancySearchService = vacancySearchService;
     }
 
     @GetMapping(value = "/vacancies")
@@ -37,7 +37,7 @@ public class SearchServiceRestController {
         CompletableFuture.supplyAsync(() -> {
             ResponseWrapper response;
             try {
-                response = searchService.search(searchString,offset, limit);
+                response = vacancySearchService.search(searchString,offset, limit);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -62,7 +62,7 @@ public class SearchServiceRestController {
         CompletableFuture.supplyAsync(() -> {
             Vacancy response;
             try {
-                response = searchService.getVacancy(id);
+                response = vacancySearchService.getVacancy(id);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);

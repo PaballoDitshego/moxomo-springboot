@@ -1,11 +1,14 @@
-package za.co.moxomo.config;
+package za.co.moxomo.config.security;
 
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import za.co.moxomo.exception.CustomException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,39 +18,29 @@ import java.io.IOException;
 
 public class JwtTokenAuthenticationFilter extends  OncePerRequestFilter {
 
-    private JwtConfig jwtConfig;
-
     private final JwtTokenProvider jwtTokenProvider;
 
     public JwtTokenAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider=jwtTokenProvider;
-        this.jwtConfig=jwtTokenProvider.getJwtConfig();
+        this.jwtTokenProvider = jwtTokenProvider;
+
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String header = request.getHeader(jwtConfig.getHeader());
-        if(header == null || !header.startsWith(jwtConfig.getPrefix())) {
-            chain.doFilter(request, response);
-            return;
-        }
-        String token = header.replace(jwtConfig.getPrefix(), "");
+        String token = jwtTokenProvider.resolveToken(request);
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(jwtConfig.getSecret().getBytes())
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            String username = claims.getSubject();
-            if(username != null) {
-                UsernamePasswordAuthenticationToken auth = jwtTokenProvider.getAuthentication(username);
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication auth = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-
-        } catch (Exception e) {
+        } catch (CustomException ex) {
+            //this is very important, since it guarantees the user is not authenticated at all
             SecurityContextHolder.clearContext();
+            response.sendError(ex.getHttpStatus().value(), ex.getMessage());
+            return;
         }
+
         chain.doFilter(request, response);
     }
 

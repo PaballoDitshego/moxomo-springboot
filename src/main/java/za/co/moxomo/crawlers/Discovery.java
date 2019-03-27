@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -20,7 +21,8 @@ import org.springframework.web.client.RestTemplate;
 import za.co.moxomo.crawlers.model.discovery.DiscoveryRequest;
 import za.co.moxomo.crawlers.model.discovery.DiscoveryResponse;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
+import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -31,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "discovery", havingValue = "true")
 public class Discovery {
 
     private static final Logger logger = LoggerFactory.getLogger(Discovery.class);
@@ -38,15 +41,15 @@ public class Discovery {
     private static final String ENDPOINT = "https://www.discovery.co.za/portal/individual/discovery-career-search/search.do";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
 
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
     @Autowired
-    public Discovery(final SearchService searchService) {
-        this.searchService = searchService;
+    public Discovery(final VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
 
-    @Scheduled(fixedDelay=900000, initialDelay = 0)
+    @Scheduled(fixedDelay = 900000, initialDelay = 0)
     public void crawl() {
 
         logger.info("Crawling Discovery started at {}", LocalDateTime.now());
@@ -56,8 +59,7 @@ public class Discovery {
         headers.add("x-requested-with", "XMLHttpRequest");
         headers.add("Content-Type", "application/json");
         HttpEntity<DiscoveryRequest> request = new HttpEntity<DiscoveryRequest>(new DiscoveryRequest(), headers);
-        RestTemplate restTemplate =  new RestTemplate();
-
+        RestTemplate restTemplate = new RestTemplate();
 
 
         ResponseEntity<List<DiscoveryResponse>> responseEntity = restTemplate.exchange(ENDPOINT, HttpMethod.POST,
@@ -83,7 +85,7 @@ public class Discovery {
 
     }
 
-    private void createVacancy(DiscoveryResponse discoveryResponse) throws IOException, DecoderException, ParseException {
+    private void createVacancy(DiscoveryResponse discoveryResponse) throws Exception {
         Objects.requireNonNull(discoveryResponse);
 
         String position = discoveryResponse.getPositionDescription();
@@ -102,14 +104,15 @@ public class Discovery {
         setAdditionalData(vacancy);
 
         logger.info("vacancy {}", vacancy.toString());
+        Util.validate(vacancy);
 
-        if(!searchService.isExists(vacancy)){
-            searchService.index(vacancy);
+
+        if (!vacancySearchService.isExists(vacancy)) {
+            vacancySearchService.index(vacancy);
         }
-
     }
 
-    private  void setAdditionalData(Vacancy vacancy) throws IOException, DecoderException, ParseException {
+    private void setAdditionalData(Vacancy vacancy) throws IOException, DecoderException, ParseException {
         Objects.requireNonNull(vacancy);
         logger.info(vacancy.getUrl());
 
@@ -121,11 +124,11 @@ public class Discovery {
                 .timeout(60000).execute();
 
         Document doc = response.parse();
-        String date = StringUtils.substringBetween( doc.getElementsContainingText("Posted").first().text(),
+        String date = StringUtils.substringBetween(doc.getElementsContainingText("Posted").first().text(),
                 "Posted", "-").trim();
 
-        String description=StringUtils.substringBetween(doc.getElementsByClass("joqReqDescription").first().text(),
-                "Key Purpose", "Areas of responsibility may include but not limited to").trim();
+        String description = (!doc.getElementsByClass("joqReqDescription").first().text().contains("Key purpose of")) ? StringUtils.substringBetween(doc.getElementsByClass("joqReqDescription").first().text(),
+                "Key Purpose", (doc.getElementsByClass("joqReqDescription").first().text().contains("Areas of responsibility may include but not limited to")) ? "Areas of responsibility may include but not limited to" : "Key Outputs:").trim() : doc.getElementsByClass("joqReqDescription").first().text();
 
         Instant instant = sdf.parse(date).toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour()))
                 .plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));
@@ -133,8 +136,9 @@ public class Discovery {
         java.util.Date advertDate = Date.from(instant);
         vacancy.setDescription(description);
         vacancy.setAdvertDate(advertDate);
-        vacancy.setAdditionalTokens(doc.getElementsByClass("joqReqDescription").first().text());
-
+        if (doc.hasClass("joqReqDescription")) {
+            vacancy.setAdditionalTokens(doc.getElementsByClass("joqReqDescription").first().text());
+        }
     }
 
 }

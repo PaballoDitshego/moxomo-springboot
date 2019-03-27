@@ -1,7 +1,5 @@
 package za.co.moxomo.crawlers;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -10,17 +8,15 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
-import za.co.moxomo.utils.Util;
+import za.co.moxomo.services.VacancySearchService;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,15 +28,16 @@ import org.jsoup.select.Elements;
  * @author Paballo
  */
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "careerjunction", havingValue="true")
 public class CareerJunction {
 
     private static String CAREER = "https://www.careerjunction.co.za/jobs/results?sort=newest";
     private static final Logger logger = LoggerFactory.getLogger(CareerJunction.class);
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
     @Autowired
-    public CareerJunction(final SearchService searchService) {
-        this.searchService = searchService;
+    public CareerJunction(final VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
     @Scheduled(fixedDelay = 900000, initialDelay = 1200000)
@@ -97,8 +94,8 @@ public class CareerJunction {
                         if (url.contains("/jobs/view")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            if (!searchService.isExists(vacancy)) {
-                                searchService.index(vacancy);
+                            if (!vacancySearchService.isExists(vacancy)) {
+                                vacancySearchService.index(vacancy);
                                 logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
                         }
@@ -121,7 +118,6 @@ public class CareerJunction {
         Objects.requireNonNull(url);
         Objects.requireNonNull(doc);
         Vacancy vacancy;
-        logger.info("Creating");
         try {
             String jobTitle;
             String description;

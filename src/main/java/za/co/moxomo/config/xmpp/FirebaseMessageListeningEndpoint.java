@@ -72,7 +72,7 @@ public class FirebaseMessageListeningEndpoint extends ChatMessageListeningEndpoi
 
     private class GcmPacketListener implements StanzaListener {
         @Override
-        public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
+        public void processStanza(Stanza packet) {
             log.debug("Packet received from gcm " + packet.toString());
             if (packet instanceof org.jivesoftware.smack.packet.Message) {
                 org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;

@@ -26,7 +26,6 @@ import org.springframework.scheduling.support.PeriodicTrigger;
 import javax.net.ssl.SSLSocketFactory;
 
 @Configuration
-
 public class XmppConfig {
 
 

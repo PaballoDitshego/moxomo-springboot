@@ -10,10 +10,11 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.services.SearchService;
+import za.co.moxomo.services.VacancySearchService;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -29,15 +30,16 @@ import java.util.regex.Pattern;
 
 
 @Component
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "nedbank", havingValue="true")
 public class Nedbank {
     private static final Logger logger = LoggerFactory.getLogger(Nedbank.class
             .getCanonicalName());
-    private SearchService searchService;
+    private VacancySearchService vacancySearchService;
 
 
     @Autowired
-    public Nedbank(final SearchService searchService) {
-        this.searchService = searchService;
+    public Nedbank(final VacancySearchService vacancySearchService) {
+        this.vacancySearchService = vacancySearchService;
     }
 
 
@@ -97,8 +99,8 @@ public class Nedbank {
                         if (url.contains("/job/")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            if (!searchService.isExists(vacancy)) {
-                                searchService.index(vacancy);
+                            if (!vacancySearchService.isExists(vacancy)) {
+                                vacancySearchService.index(vacancy);
                                 logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }
 
