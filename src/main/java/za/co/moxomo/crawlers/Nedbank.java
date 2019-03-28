@@ -14,7 +14,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.services.VacancySearchService;
+import za.co.moxomo.utils.Util;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -35,22 +37,27 @@ public class Nedbank {
     private static final Logger logger = LoggerFactory.getLogger(Nedbank.class
             .getCanonicalName());
     private VacancySearchService vacancySearchService;
-
+    private VacancySearchRepository vacancySearchRepository;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Autowired
-    public Nedbank(final VacancySearchService vacancySearchService) {
+    public Nedbank(final VacancySearchService vacancySearchService, final VacancySearchRepository vacancySearchRepository) {
         this.vacancySearchService = vacancySearchService;
+        this.vacancySearchRepository=vacancySearchRepository;
     }
 
 
-    @Scheduled(fixedDelay = 900000, initialDelay = 900000)
+    @Scheduled(fixedDelay = 900000, initialDelay = 0)
     public void crawl() {
         logger.info("Nedbank crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
 
         final HashSet<String> crawledUrls = new HashSet<>();
         final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
-
+        
+        
+        urlsToCrawl.add("https://jobs.nedbank.co.za/search/?q=&sortColumn=referencedate&sortDirection=desc");
         for (int i = 0; i <= 100; i += 25) {
             String url = (i == 0) ? "https://jobs.nedbank.co.za/search/?q=&sortColumn=referencedate&sortDirection=desc" : "https://jobs.nedbank.co.za/search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=".concat(String.valueOf(i));
             urlsToCrawl.add(url);
@@ -99,9 +106,20 @@ public class Nedbank {
                         if (url.contains("/job/")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
+                            logger.info("Vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
+                           logger.info("is valid{}" , Util.validate(vacancy));
+                            if(vacancySearchService.isExists(vacancy)) {
+                            	Vacancy existingVac = vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).get(0);
+                            	logger.info("Existing vacancy {}", existingVac.toString());
+                            	if(!existingVac.getJobTitle().equals(vacancy.getJobTitle())) {
+                            		vacancySearchRepository.deleteById(existingVac.getId());
+                            		
+                            	}
+                            }
+                            logger.info("Nedbank vacancy exist {}",vacancySearchService.isExists(vacancy));
                             if (!vacancySearchService.isExists(vacancy)) {
                                 vacancySearchService.index(vacancy);
-                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
+                                logger.info("Saved vacancy item with id {}", vacancy.getId());
                             }
 
                         }
@@ -141,32 +159,32 @@ public class Nedbank {
             String additionalTokens = null;
             Date advertDate = null;
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-            ObjectMapper mapper = new ObjectMapper();
+            
 
 
             jobTitle = doc.getElementById("job-title").text()
                     .trim();
-            logger.debug("job title {}", jobTitle);
+            logger.info("job title {}", jobTitle);
             location = doc.getElementsByClass("jobGeoLocation").first().text().trim();
-            logger.debug("location {}", location);
+            logger.info("location {}", location);
             description = doc.getElementsByClass("jobdescription").first().text().trim();
             description = StringUtils.substringBetween(description, "Job Purpose", ".").trim();
-            logger.debug("description {}", description);
+            logger.info("description {}", description);
             imageUrl = "https://rmkcdn.successfactors.com/dd82a348/1311423d-203f-422e-b24b-e.gif";
             date = doc.getElementById("job-date").text().replace("Date:", "").trim();
-            logger.debug("date {}", date);
+            logger.info("date {}", date);
             Instant instant = sdf.parse(date).toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour()))
                     .plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));
             company = "Nedbank Limited";
 
             advertDate = Date.from(instant);
-            logger.debug("advertDate {}", advertDate);
+            logger.info("advertDate {}", advertDate);
             Pattern p = Pattern.compile("\\d+");
             Matcher m = p.matcher(url);
             while (m.find()) {
                 offerId = m.group();
             }
-            logger.debug("offerid {}", offerId);
+            logger.info("offerid {}", offerId);
 
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,

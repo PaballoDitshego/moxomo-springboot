@@ -74,10 +74,10 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         }
         try {
             vacancy = vacancySearchRepository.save(vacancy);
+            logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
             performPercolationQuery(vacancy);
         } catch (Exception e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
-
             logger.error(timeMarker, objectMapper.writeValueAsString(vacancy), e);
         }
 
@@ -103,7 +103,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         MultiMatchQueryBuilder multiMatchQuery = null;
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
-                    searchString, "jobTitle^0.8", "description", "additionalTokens", "responsibilities", "location", "company^0.8", "qualifications")
+                    searchString, "jobTitle^0.8", "description", "additionalTokens", "responsibilities", "location", "company^0.9", "qualifications")
                     .type(MultiMatchQueryBuilder.Type.PHRASE).lenient(true).autoGenerateSynonymsPhraseQuery(true);
         }
         final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "5h", "5" +
@@ -113,7 +113,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit);
         final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
-                "advertDate", "imageUrl", "url", "webViewViewable", "company"}, null);
+                "advertDate", "imageUrl", "url", "webViewViewable"}, null);
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices(JOBS)
                 .withQuery(query)
                 .withSourceFilter(sourceFilter)
@@ -121,7 +121,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                         PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate") : pageRequest)
                 .build();
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
-        logger.debug("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
+        logger.info("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
         int totalNumberOfPages = 1;
         if (totalNumberOfElements > 0) {
             totalNumberOfPages = (totalNumberOfElements / limit) == 0 ? 1 : (totalNumberOfElements / limit);
