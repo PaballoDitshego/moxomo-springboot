@@ -1,4 +1,5 @@
 package za.co.moxomo.config.xmpp;
 
-public class AndroidClickActionType {
+public enum AndroidClickActionType {
+    VIEW_JOB_ALERT
 }

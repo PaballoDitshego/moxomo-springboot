@@ -20,7 +20,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import za.co.moxomo.crawlers.model.discovery.DiscoveryRequest;
 import za.co.moxomo.crawlers.model.discovery.DiscoveryResponse;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.services.VacancySearchService;
 import za.co.moxomo.utils.Util;
 

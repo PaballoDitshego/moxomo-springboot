@@ -1,15 +1,14 @@
 package za.co.moxomo.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
-import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -18,7 +17,7 @@ import org.elasticsearch.index.query.functionscore.GaussDecayFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.percolator.PercolateQueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.joda.time.DateTime;
+import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -33,38 +32,46 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
-import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.model.wrapper.SearchResults;
+import za.co.moxomo.domain.AlertPreference;
+import za.co.moxomo.domain.Vacancy;
+import za.co.moxomo.enums.PercolatorIndexFields;
+import za.co.moxomo.dto.wrapper.SearchResults;
+import za.co.moxomo.repository.elasticsearch.AlertPreferenceRepository;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.utils.Util;
 
+import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.Date;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
-import static org.elasticsearch.index.query.Operator.AND;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.index.query.QueryBuilders.*;
+import static za.co.moxomo.config.Config.PERCOLATOR_INDEX;
+import static za.co.moxomo.config.Config.PERCOLATOR_INDEX_MAPPING_TYPE;
 
 
 @Service
 public class VacancySearchServiceImpl implements VacancySearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(VacancySearchServiceImpl.class);
-    public static final String JOBS = "jobs";
+    private static final String JOBS = "jobs";
+    private static final String JOB_ALERTS = "job_alerts";
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
     private VacancySearchRepository vacancySearchRepository;
     private ElasticsearchOperations elasticsearchTemplate;
+    private AlertPreferenceRepository alertPreferenceRepository;
 
     @Autowired
-    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, ElasticsearchOperations elasticsearchTemplate) {
+    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository, ElasticsearchOperations elasticsearchTemplate) {
         this.vacancySearchRepository = vacancySearchRepository;
         this.elasticsearchTemplate = elasticsearchTemplate;
+        this.alertPreferenceRepository = alertPreferenceRepository;
     }
 
     @Override
@@ -75,12 +82,11 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         try {
             vacancy = vacancySearchRepository.save(vacancy);
             logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
-            performPercolationQuery(vacancy);
+
         } catch (Exception e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
             logger.error(timeMarker, objectMapper.writeValueAsString(vacancy), e);
         }
-
         return vacancy;
     }
 
@@ -103,17 +109,20 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         MultiMatchQueryBuilder multiMatchQuery = null;
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
-                    searchString, "jobTitle^0.8", "description", "additionalTokens", "responsibilities", "location", "company^0.9", "qualifications")
-                    .type(MultiMatchQueryBuilder.Type.PHRASE).lenient(true).autoGenerateSynonymsPhraseQuery(true);
+                    searchString).field("jobTitle", 5)
+                    .field("company", 2)
+                    .field("description")
+                    .field("location", 2)
+                    //     .field("additionalTokens")
+                    .type(MultiMatchQueryBuilder.Type.PHRASE);
         }
-        final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "5h", "5" +
-                "h", 0.75);
+        final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "3h", "2h", 0.5);
         final FunctionScoreQueryBuilder query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), gaussDecayFunctionBuilder);
         query.boostMode(CombineFunction.MULTIPLY);
 
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit);
         final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
-                "advertDate", "imageUrl", "url", "webViewViewable"}, null);
+                "advertDate", "imageUrl", "url", "webViewViewable", "company"}, null);
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices(JOBS)
                 .withQuery(query)
                 .withSourceFilter(sourceFilter)
@@ -128,7 +137,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         }
         final Page<Vacancy> vacancies = vacancySearchRepository.search(searchQuery);
 
-        return new SearchResults(offset,vacancies.getTotalElements(), totalNumberOfPages, vacancies.getContent());
+        return new SearchResults(offset, vacancies.getTotalElements(), totalNumberOfPages, vacancies.getContent());
     }
 
     @Override
@@ -137,7 +146,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         LocalDateTime localDate = LocalDateTime.now().minus(Duration.ofDays(31)).atZone(ZoneId.of("Africa/Johannesburg")).toLocalDateTime();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss");
         String date = localDate.format(dateTimeFormatter);
-
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.rangeQuery("advertDate")
                         .lte(date));
@@ -149,19 +157,91 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     }
 
-    private void performPercolationQuery(Vacancy vacancy) {
+    @Override
+    public AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException {
+        Objects.requireNonNull(alertPreference);
+       alertPreferenceRepository.save(alertPreference);
+        BoolQueryBuilder bqb = createBoolQuery(alertPreference);
+        elasticsearchTemplate.getClient().prepareIndex(PERCOLATOR_INDEX, PERCOLATOR_INDEX_MAPPING_TYPE, alertPreference.getAlertPreferenceId())
+                .setSource(jsonBuilder()
+                        .startObject()
+                        .field(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(), bqb) // Register the query
+                        .endObject())
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE) // Needed when the query shall be available immediately
+                .get();
 
-        GetResponse response = elasticsearchTemplate.getClient().prepareGet(JOBS, "_doc", vacancy.getId()).get();
-        BytesReference bytesReference = response.getSourceAsBytesRef();
-        PercolateQueryBuilder percolateQuery = new PercolateQueryBuilder("query", bytesReference, XContentType.JSON);
-        SearchResponse searchResponse = elasticsearchTemplate.getClient().prepareSearch("myIndexName")
-                .setQuery(percolateQuery).get();
-        for (SearchHit hit : searchResponse.getHits()) {
+        return alertPreference;
+    }
 
-            // Percolator queries as hit
+    public Collection<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
+        Collection<AlertPreference> results = new ArrayList<>();
+        PercolateQueryBuilder percolateQuery = createPercolateQuery(vacancy);
+
+        // Percolate, by executing the percolator query in the query dsl:
+        SearchResponse searchResponse = elasticsearchTemplate.getClient().prepareSearch(PERCOLATOR_INDEX)
+                .setQuery(percolateQuery)
+                .execute()
+                .actionGet();
+
+        if (searchResponse != null) {
+            SearchHits searchHits = searchResponse.getHits();
+            if (searchHits != null && searchHits.getTotalHits() > 0) {
+                for (SearchHit hit : searchHits.getHits()) {
+                    results.add(alertPreferenceRepository.findById(hit.getId()).get());
+                }
+            }
         }
 
-
+        return results;
     }
+
+
+    private BoolQueryBuilder createBoolQuery(AlertPreference preference) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        if (preference.getCriteria().getJobTitle() != null) {
+            boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.JOB_TITLE.getFieldName(), preference.getCriteria().getJobTitle()));
+        }
+
+        if (preference.getCriteria().getProvince() != null && preference.getCriteria().getProvince().length > 0) {
+            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
+                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.PROVINCE.getFieldName(), s)).minimumShouldMatch(1);
+
+                    }
+            );
+        }
+        if (preference.getCriteria().getTown() != null && preference.getCriteria().getTown().length > 0) {
+            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
+                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.TOWN.getFieldName(), s)).minimumShouldMatch(1);
+
+                    }
+            );
+        }
+        if (preference.getCriteria().getTags() != null && preference.getCriteria().getTags().length > 0) {
+            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
+                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.TAGS.getFieldName(), s)).minimumShouldMatch(1);
+
+                    }
+            );
+        }
+
+        return boolQueryBuilder;
+    }
+
+
+    private PercolateQueryBuilder createPercolateQuery(Vacancy vacancy) throws IOException {
+        //Build a document to check against the percolator
+        XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
+        docBuilder.field(PercolatorIndexFields.JOB_TITLE.getFieldName(), vacancy.getJobTitle());
+        docBuilder.array(PercolatorIndexFields.TOWN.getFieldName(), vacancy.getLocation());
+        docBuilder.array(PercolatorIndexFields.PROVINCE.getFieldName(), vacancy.getLocation());
+        // docBuilder.field(PercolatorIndexFields.TYPE.getFieldName(), book.getType());*/
+        docBuilder.endObject();
+
+        return new PercolateQueryBuilder(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(),
+                BytesReference.bytes(docBuilder),
+                XContentType.JSON);
+    }
+
 
 }

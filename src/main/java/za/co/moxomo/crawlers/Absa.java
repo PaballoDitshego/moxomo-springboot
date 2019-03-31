@@ -16,12 +16,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.absa.AbsaResponse;
 import za.co.moxomo.crawlers.model.absa.RequisitionList;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.services.VacancySearchService;
 import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;

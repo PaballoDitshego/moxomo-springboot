@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import za.co.moxomo.UserDTO;
-import za.co.moxomo.model.User;
+import za.co.moxomo.domain.User;
 import za.co.moxomo.services.UserService;
 
 import java.util.Objects;

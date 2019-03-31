@@ -13,19 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.services.VacancySearchService;
-import za.co.moxomo.utils.Util;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +44,7 @@ public class Nedbank {
     }
 
 
-    @Scheduled(fixedDelay = 900000, initialDelay = 0)
+    @Scheduled(fixedDelay = 900000, initialDelay =900000)
     public void crawl() {
         logger.info("Nedbank crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -106,22 +102,11 @@ public class Nedbank {
                         if (url.contains("/job/")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            logger.info("Vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
-                           logger.info("is valid{}" , Util.validate(vacancy));
-                            if(vacancySearchService.isExists(vacancy)) {
-                            	Vacancy existingVac = vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).get(0);
-                            	logger.info("Existing vacancy {}", existingVac.toString());
-                            	if(!existingVac.getJobTitle().equals(vacancy.getJobTitle())) {
-                            		vacancySearchRepository.deleteById(existingVac.getId());
-                            		
-                            	}
-                            }
                             logger.info("Nedbank vacancy exist {}",vacancySearchService.isExists(vacancy));
-                            if (!vacancySearchService.isExists(vacancy)) {
+                           if (!vacancySearchService.isExists(vacancy)) {
                                 vacancySearchService.index(vacancy);
                                 logger.info("Saved vacancy item with id {}", vacancy.getId());
-                            }
-
+                           }
                         }
 
                     }
@@ -173,6 +158,8 @@ public class Nedbank {
             imageUrl = "https://rmkcdn.successfactors.com/dd82a348/1311423d-203f-422e-b24b-e.gif";
             date = doc.getElementById("job-date").text().replace("Date:", "").trim();
             logger.info("date {}", date);
+            logger.info("formatted date {}", sdf.parse(date));
+
             Instant instant = sdf.parse(date).toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour()))
                     .plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));
             company = "Nedbank Limited";
@@ -188,10 +175,8 @@ public class Nedbank {
 
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
-                    contractType, (Objects.nonNull(imageUrl) && !imageUrl.contentEquals("https://www.pnet.co.za")) ? imageUrl : "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png", remuneration, "PNET", additionalTokens, affirmativeAction, url);
-            if (vacancy.getImageUrl().contentEquals("https://www.pnet.co.za/upload_za/logo/8/5281-logo.jpg")) {
-                vacancy.setImageUrl("http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png");
-            }
+                    contractType, imageUrl, remuneration, "Nedbank", additionalTokens, affirmativeAction, url);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

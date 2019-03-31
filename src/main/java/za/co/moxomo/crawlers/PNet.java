@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.services.VacancySearchService;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
-@ConditionalOnProperty(prefix = "crawler.toggle", name = "pnet", havingValue="true")
+@ConditionalOnProperty(prefix = "crawler.toggle", name = "pnet", havingValue = "true")
 public class PNet {
 
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
@@ -95,7 +95,7 @@ public class PNet {
                         if (url.contains("jobs--") && url.contains("inline")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                           if (!vacancySearchService.isExists(vacancy)) {
+                            if (!vacancySearchService.isExists(vacancy)) {
                                 if (vacancy.getCompany().contains("Communicate")) {
                                     continue;
                                 }
@@ -107,64 +107,6 @@ public class PNet {
 
                     }
                 } catch (Exception e) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
                     continue;
@@ -319,13 +261,13 @@ public class PNet {
 
 
             }
-            if(description == null || description.equals("")){
+            if (description == null || description.equals("")) {
                 description = doc.getElementsByClass("richtext").first().text();
                 int noRichText = doc.getElementsByClass("richtext").size();
-                if(noRichText>1) {
+                if (noRichText > 1) {
                     responsibilities = doc.getElementsByClass("richtext").get(1).text();
                 }
-                if(noRichText>2) {
+                if (noRichText > 2) {
                     qualifications = doc.getElementsByClass("richtext").get(2).text();
                 }
 

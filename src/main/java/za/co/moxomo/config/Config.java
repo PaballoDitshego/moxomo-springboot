@@ -7,12 +7,17 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -28,9 +33,11 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
@@ -39,9 +46,14 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import za.co.moxomo.enums.PercolatorIndexFields;
 import za.co.moxomo.exception.MoxomoResponseErrorHandler;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
+
 import static org.apache.http.conn.params.ConnManagerParams.DEFAULT_MAX_TOTAL_CONNECTIONS;
 import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIONS_PER_ROUTE;
 
@@ -53,7 +65,14 @@ import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIO
 @EnableSwagger2
 public class Config {
 
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
+
     private static final String VACANCIES="vacancies";
+    public static final String PERCOLATOR_INDEX = "jobs_alrt";
+    public static final String PERCOLATOR_INDEX_MAPPING_TYPE = "docs";
+
+
+
 
     @Value("${mongodb.host}")
     private String DBHost;
@@ -66,6 +85,47 @@ public class Config {
 
     @Value("${elasticsearch.port}")
     private Integer SEARCH_PORT;
+
+    @PostConstruct
+    public void initializePercolatorIndex() {
+        try {
+            Client client = elasticsearchClient();
+
+            IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(PERCOLATOR_INDEX).get();
+
+            if (indicesExistsResponse == null || !indicesExistsResponse.isExists()) {
+                XContentBuilder percolatorQueriesMapping = XContentFactory.jsonBuilder()
+                        .startObject()
+                        .startObject("properties");
+                Arrays.stream(PercolatorIndexFields.values())
+                        .forEach(field -> {
+                            try {
+                                percolatorQueriesMapping
+                                        .startObject(field.getFieldName())
+                                        .field("type", field.getFieldType())
+                                        .endObject();
+                            } catch (IOException e) {
+                                logger.error(String.format("Error while adding field %s to mapping", field.name()), e);
+                                throw new RuntimeException(
+                                        String.format("Something went wrong while adding field %s to mapping", field.name()), e);
+                            }
+                        });
+
+                percolatorQueriesMapping
+                        .endObject()
+                        .endObject();
+
+                client.admin().indices().prepareCreate(PERCOLATOR_INDEX)
+                        .addMapping(PERCOLATOR_INDEX_MAPPING_TYPE, percolatorQueriesMapping)
+                        .execute()
+                        .actionGet();
+            }
+        } catch (Exception e) {
+            logger.error("Error while creating percolator index", e);
+            throw new RuntimeException("Something went wrong during the creation of the percolator index", e);
+        }
+    }
+
 
 
     @Bean
@@ -99,7 +159,7 @@ public class Config {
         return new MongoTemplate(mongoClient(), VACANCIES);
     }
     @Bean
-    public Client elasticSearchClient()  throws Exception{
+    public Client elasticsearchClient()  throws Exception{
         TransportClient client = new PreBuiltTransportClient(Settings.EMPTY);
         client.addTransportAddress(new TransportAddress(InetAddress.getByName(SEARCH_HOST), SEARCH_PORT));
         return client;
@@ -107,7 +167,7 @@ public class Config {
 
     @Bean
     public ElasticsearchOperations elasticsearchTemplate() throws Exception {
-        return new ElasticsearchTemplate(elasticSearchClient());
+        return new ElasticsearchTemplate(elasticsearchClient());
     }
 
     @Bean
@@ -153,6 +213,15 @@ public class Config {
         threadPoolTaskScheduler.setPoolSize(10);
         return threadPoolTaskScheduler;
     }
+
+
+    @Bean(name = PollerMetadata.DEFAULT_POLLER)
+    public PollerMetadata defaultPoller() {
+        PollerMetadata pollerMetadata = new PollerMetadata();
+        pollerMetadata.setTrigger(new PeriodicTrigger(50));
+        return pollerMetadata;
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

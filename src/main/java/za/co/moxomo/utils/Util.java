@@ -3,7 +3,7 @@ package za.co.moxomo.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 
 
 

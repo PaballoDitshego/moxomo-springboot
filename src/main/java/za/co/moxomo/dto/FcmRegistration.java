@@ -1,4 +1,4 @@
-package za.co.moxomo.model;
+package za.co.moxomo.dto;
 
 public class FcmRegistration {
 

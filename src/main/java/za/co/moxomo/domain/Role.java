@@ -1,4 +1,4 @@
-package za.co.moxomo.model;
+package za.co.moxomo.domain;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum Role implements GrantedAuthority {

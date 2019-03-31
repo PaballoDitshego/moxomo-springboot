@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
-import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.model.wrapper.ResponseWrapper;
+import za.co.moxomo.domain.Vacancy;
+import za.co.moxomo.dto.wrapper.ResponseWrapper;
 import za.co.moxomo.services.VacancySearchService;
 
 import java.util.Objects;

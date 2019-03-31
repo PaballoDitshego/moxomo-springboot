@@ -1,4 +1,4 @@
-package za.co.moxomo.model;
+package za.co.moxomo.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.data.annotation.Id;
@@ -25,6 +25,12 @@ public class Vacancy {
     private String jobTitle;
     private String description;
     private String offerId;
+    @MultiField(
+            mainField = @Field(type = Text, fielddata = true),
+            otherFields = {
+                    @InnerField(suffix = "verbatim", type = Keyword)
+            }
+    )
     private String company;
     private String reference;
     private String location;
@@ -40,22 +46,23 @@ public class Vacancy {
     private String imageUrl;
     private Long companyId;
     private Long agentId;
-    private String  url;
+    private String url;
     private String remuneration;
     private String source;
     private String affirmativeAction;
     private String additionalTokens;
     private Date closingDate;
-    private boolean webViewViewable =true;
+    private boolean webViewViewable = true;
 
-   public Vacancy(){
+    public Vacancy() {
 
-   }
+    }
+
     public Vacancy(String jobTitle, String description, String offerId, String company, String location,
                    String province, String qualifications, String responsibilities, Date advertDate,
-                   String contractType, String imageUrl, String remuneration, String source, String additionalTokens, String affirmativeAction,String url) {
+                   String contractType, String imageUrl, String remuneration, String source, String additionalTokens, String affirmativeAction, String url) {
 
-        this.id= UUID.randomUUID().toString();
+        this.id = UUID.randomUUID().toString();
         this.jobTitle = jobTitle.trim();
         this.description = description.trim();
         this.offerId = offerId.trim();
@@ -69,10 +76,10 @@ public class Vacancy {
         this.imageUrl = imageUrl.trim();
         this.remuneration = remuneration;
         this.source = source;
-        this.link=url;
+        this.link = url;
         this.additionalTokens = additionalTokens;
-        this.affirmativeAction=affirmativeAction;
-        this.url=url.trim();
+        this.affirmativeAction = affirmativeAction;
+        this.url = url.trim();
     }
 
     public String getId() {
@@ -234,7 +241,6 @@ public class Vacancy {
     }
 
 
-
     public String getAffirmativeAction() {
         return affirmativeAction;
     }
@@ -255,8 +261,6 @@ public class Vacancy {
         this.affirmativeAction = affirmativeAction;
 
 
-
-
     }
 
     @Override
@@ -273,7 +277,7 @@ public class Vacancy {
                 ", qualifications='" + qualifications + '\'' +
                 ", responsibilities='" + responsibilities + '\'' +
                 ", advertDate=" + advertDate +
-               // ", closingDate=" + closingDate +
+                // ", closingDate=" + closingDate +
                 ", link='" + link + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", companyId=" + companyId +

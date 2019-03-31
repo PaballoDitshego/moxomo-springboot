@@ -1,7 +1,7 @@
 package za.co.moxomo.repository.elasticsearch;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 
 import java.util.Date;
 import java.util.List;

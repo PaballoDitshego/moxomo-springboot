@@ -13,7 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.exception.CustomException;
-import za.co.moxomo.model.Role;
+import za.co.moxomo.domain.Role;
 import za.co.moxomo.services.UserDetailService;
 
 import javax.annotation.PostConstruct;

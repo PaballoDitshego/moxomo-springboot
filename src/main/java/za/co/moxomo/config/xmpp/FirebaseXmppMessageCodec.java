@@ -8,6 +8,7 @@ import org.jivesoftware.smack.packet.StandardExtensionElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.integration.support.MessageBuilder;
+import za.co.moxomo.enums.AlertType;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class FirebaseXmppMessageCodec {
     }
 
     public static Map<String, Object> createDataPart(String notificationUid, String title, String groupName, String groupUid, String description, Object id,
-                                                     Instant createdDateTime, NotificationType alertType, String entityType,
+                                                     Instant createdDateTime, AlertType alertType, String entityType,
                                                      AndroidClickActionType clickAction, int priority) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);

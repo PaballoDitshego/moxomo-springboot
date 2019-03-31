@@ -1,4 +1,4 @@
-package za.co.moxomo.model.wrapper;
+package za.co.moxomo.dto.wrapper;
 
 public abstract class ResponseWrapper {
 }

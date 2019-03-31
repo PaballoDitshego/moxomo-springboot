@@ -1,11 +1,10 @@
 package za.co.moxomo.services;
 
-import za.co.moxomo.model.Vacancy;
-import za.co.moxomo.model.wrapper.SearchResults;
+import za.co.moxomo.domain.AlertPreference;
+import za.co.moxomo.domain.Vacancy;
+import za.co.moxomo.dto.wrapper.SearchResults;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
+import java.io.IOException;
 
 
 public interface VacancySearchService {
@@ -19,4 +18,6 @@ public interface VacancySearchService {
     SearchResults search(String searchString, int offset, int limit);
 
     void deleteOldVacancies();
+
+    AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException;
 }

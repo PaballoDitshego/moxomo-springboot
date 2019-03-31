@@ -1,6 +1,6 @@
-package za.co.moxomo.model.wrapper;
+package za.co.moxomo.dto.wrapper;
 
-import za.co.moxomo.model.Vacancy;
+import za.co.moxomo.domain.Vacancy;
 
 import java.util.List;
 

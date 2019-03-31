@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import za.co.moxomo.config.security.JwtTokenProvider;
 import za.co.moxomo.exception.CustomException;
-import za.co.moxomo.model.User;
+import za.co.moxomo.domain.User;
 import za.co.moxomo.repository.mongodb.UserRepository;
 
 @Service
