@@ -60,23 +60,18 @@ public class FirebaseXmppMessageCodec {
         }
     }
 
-    public static Map<String, Object> createDataPart(String notificationUid, String title, String groupName, String groupUid, String description, Object id,
+    public static Map<String, Object> createDataPart(String alertId, String title,  String description, String entityId,
                                                      Instant createdDateTime, AlertType alertType, String entityType,
                                                      AndroidClickActionType clickAction, int priority) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
 
-        if (groupName != null) {
-            data.put("group", groupName);
-        }
+        
 
-        if (!TextUtils.isEmpty(groupUid)) {
-            data.put("groupUid", groupUid);
-        }
-
-        data.put("notificationUid", notificationUid);
+      
+        data.put("notificationUid", alertId);
         data.put("body", description);
-        data.put("id", id);
+        data.put("id", entityId);
         data.put("created_date_time", createdDateTime);
         data.put("alert_type", alertType);
         data.put("entity_type", entityType);

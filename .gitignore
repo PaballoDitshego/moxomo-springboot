@@ -15,9 +15,10 @@
 *.iws
 *.iml
 *.ipr
+*.class
 
 out/
-
+bin/
 
 ### NetBeans ###
 nbproject/private/

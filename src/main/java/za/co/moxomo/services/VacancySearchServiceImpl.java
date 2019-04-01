@@ -46,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -81,6 +82,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         }
         try {
             vacancy = vacancySearchRepository.save(vacancy);
+            List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
             logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
 
         } catch (Exception e) {
@@ -173,8 +175,8 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         return alertPreference;
     }
 
-    public Collection<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
-        Collection<AlertPreference> results = new ArrayList<>();
+    private List<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
+        List<AlertPreference> results = new ArrayList<>();
         PercolateQueryBuilder percolateQuery = createPercolateQuery(vacancy);
 
         // Percolate, by executing the percolator query in the query dsl:

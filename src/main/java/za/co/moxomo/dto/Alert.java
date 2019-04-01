@@ -18,6 +18,7 @@ public class Alert {
     private Instant createdDateTime;
     private String title;
     private String entityType;
+    private String entityId;
     private int priority;
     private String actionType;
     private AlertType alertType;

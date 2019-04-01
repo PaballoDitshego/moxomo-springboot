@@ -8,7 +8,9 @@ import org.springframework.integration.annotation.Transformer;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.dto.Alert;
+import za.co.moxomo.enums.AlertType;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +29,7 @@ public class XmppMessageTransformer {
             Alert notification = (Alert) message.getPayload();
             gcmMessage = constructGcmMessage(notification);
             log.debug("Message with id {}, transformed to {}", notification.getAlertId(),
-                    gcmMessage != null && gcmMessage.getPayload() != null ? gcmMessage.getPayload().toXML("") : "null");
+                    gcmMessage != null && gcmMessage.getPayload() != null ? gcmMessage.getPayload().toXML(FirebaseXmppMessageCodec.GCM_NAMESPACE) : "null");
         } else {
             gcmMessage = FirebaseXmppMessageCodec.encode(TOPICS.concat("keepalive"), UUID.randomUUID().toString(), null);
         }
@@ -51,7 +53,6 @@ public class XmppMessageTransformer {
 
                 break;
 
-
             default:
                 throw new UnsupportedOperationException("Have to add support for notification type: " + notification.getAlertType());
         }
@@ -74,15 +75,14 @@ public class XmppMessageTransformer {
         return FirebaseXmppMessageCodec.createDataPart(
                 notification.getAlertId(),
                 notification.getTitle(),
-                null,
-                null,
                 notification.getMessage(),
-                null,
+                notification.getEntityId(),
                 notification.getCreatedDateTime(),
                 notification.getAlertType(),
                 null,
                 null,
                 notification.getPriority());
+        
     }
 
 
