@@ -68,7 +68,7 @@ public class Config {
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     private static final String VACANCIES="vacancies";
-    public static final String PERCOLATOR_INDEX = "jobs_alrt";
+    public static final String PERCOLATOR_INDEX = "jobs_alerts";
     public static final String PERCOLATOR_INDEX_MAPPING_TYPE = "docs";
 
 

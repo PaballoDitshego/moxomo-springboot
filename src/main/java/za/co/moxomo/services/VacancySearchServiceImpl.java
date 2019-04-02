@@ -36,7 +36,7 @@ import za.co.moxomo.domain.AlertPreference;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.enums.PercolatorIndexFields;
 import za.co.moxomo.dto.wrapper.SearchResults;
-import za.co.moxomo.repository.elasticsearch.AlertPreferenceRepository;
+import za.co.moxomo.repository.mongodb.AlertPreferenceRepository;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
 import za.co.moxomo.utils.Util;
 
@@ -45,7 +45,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,7 +59,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(VacancySearchServiceImpl.class);
     private static final String JOBS = "jobs";
-    private static final String JOB_ALERTS = "job_alerts";
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
