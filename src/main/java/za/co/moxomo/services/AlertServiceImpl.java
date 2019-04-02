@@ -5,7 +5,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Service;
-import za.co.moxomo.dto.Alert;
+
+import za.co.moxomo.domain.Alert;
 
 @Service
 public class AlertServiceImpl implements AlertService {

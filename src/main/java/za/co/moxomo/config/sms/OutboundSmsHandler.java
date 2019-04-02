@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
-import za.co.moxomo.dto.Alert;
+
+import za.co.moxomo.domain.Alert;
 
 @MessageEndpoint
 public class OutboundSmsHandler {

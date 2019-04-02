@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.Transformer;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
-import za.co.moxomo.dto.Alert;
+
+import za.co.moxomo.domain.Alert;
 import za.co.moxomo.enums.AlertType;
 
 import java.time.Instant;

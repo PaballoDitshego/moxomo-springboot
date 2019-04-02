@@ -176,7 +176,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     private List<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
         List<AlertPreference> results = new ArrayList<>();
         PercolateQueryBuilder percolateQuery = createPercolateQuery(vacancy);
-
         // Percolate, by executing the percolator query in the query dsl:
         SearchResponse searchResponse = elasticsearchTemplate.getClient().prepareSearch(PERCOLATOR_INDEX)
                 .setQuery(percolateQuery)
