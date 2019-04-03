@@ -80,8 +80,9 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         }
         try {
             vacancy = vacancySearchRepository.save(vacancy);
-            List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
             logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
+            List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
+            
 
         } catch (Exception e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
