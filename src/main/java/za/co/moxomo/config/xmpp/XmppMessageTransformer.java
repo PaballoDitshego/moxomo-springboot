@@ -1,19 +1,18 @@
 package za.co.moxomo.config.xmpp;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Map;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.Transformer;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import za.co.moxomo.domain.Alert;
-import za.co.moxomo.enums.AlertType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
+import za.co.moxomo.domain.Alert;
 
 @Component
 public class XmppMessageTransformer {
