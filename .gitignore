@@ -17,7 +17,7 @@
 *.ipr
 *.class
 
-out/
+out/g
 bin/
 
 ### NetBeans ###

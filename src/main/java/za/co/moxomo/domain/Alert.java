@@ -18,7 +18,7 @@ public class Alert {
 	private String alertId;
 	private AlertPreference alertPreference;
 	private boolean delivered;
-	private String message;
+	private String description;
 	private Instant createdDateTime;
 	private String title;
 	private String entityType;
