@@ -8,9 +8,8 @@ public enum PercolatorIndexFields {
 
     PERCOLATOR_QUERY("query", "percolator"),
     JOB_TITLE("jobTitle", "text"),
-    PROVINCE("province", "keyword"),
-    TOWN("town", "keyword"),
-    TAGS("tags", "keyword");
+    LOCATION("location", "text"),
+    TAGS("tags", "text");
 
     private final String fieldName;
     private final String fieldType;

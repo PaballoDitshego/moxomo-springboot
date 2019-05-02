@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -26,6 +27,7 @@ import org.springframework.scheduling.support.PeriodicTrigger;
 import javax.net.ssl.SSLSocketFactory;
 
 @Configuration
+@Import(InfrastructureConfig.class)
 public class XmppConfig {
 
 
@@ -82,28 +84,7 @@ public class XmppConfig {
         return adapter;
     }
 
-    @Bean(name = PollerMetadata.DEFAULT_POLLER)
-    public PollerMetadata defaultPoller() {
-        PollerMetadata pollerMetadata = new PollerMetadata();
-        pollerMetadata.setTrigger(new PeriodicTrigger(50));
-        return pollerMetadata;
-    }
 
-    @Bean
-    public MessageChannel fcmOutboundChannel(){
-        return new DirectChannel();
-    }
-
-    @Bean
-    public MessageChannel fcmXmppOutboundChannel(){
-        return new DirectChannel();
-    }
-
-    @Bean
-    public MessageChannel requestChannel(){return new QueueChannel();}
-
-    @Bean
-    public MessageChannel fcmInboundChannel(){return new DirectChannel();}
 }
 
 

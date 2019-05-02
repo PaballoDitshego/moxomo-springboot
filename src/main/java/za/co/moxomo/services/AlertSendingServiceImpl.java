@@ -1,5 +1,6 @@
 package za.co.moxomo.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
@@ -9,7 +10,8 @@ import org.springframework.stereotype.Service;
 import za.co.moxomo.domain.Alert;
 
 @Service
-public class AlertServiceImpl implements AlertService {
+@Slf4j
+public class AlertSendingServiceImpl implements AlertSendingService {
 
     @Autowired
     private MessageChannel requestChannel;
@@ -17,11 +19,16 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public void sendAlert(Alert alert) {
+        Message<Alert> message = createMessage(alert, alert.getRoute());
+        log.info("Sending message {}", message.getPayload().toString() );
+        requestChannel.send(message);
 
     }
 
     @Override
     public void sendAlert(String destination, Alert alert) {
+        Message<Alert> message = createMessage(alert, destination);
+        requestChannel.send(message);
 
     }
 

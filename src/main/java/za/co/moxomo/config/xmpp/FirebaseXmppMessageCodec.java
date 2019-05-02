@@ -61,14 +61,10 @@ public class FirebaseXmppMessageCodec {
     }
 
     public static Map<String, Object> createDataPart(String alertId, String title,  String description, String entityId,
-                                                     Instant createdDateTime, AlertType alertType, String entityType,
+                                                     Instant createdDateTime, String alertType, String entityType,
                                                      AndroidClickActionType clickAction, int priority) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
-
-        
-
-      
         data.put("notificationUid", alertId);
         data.put("body", description);
         data.put("id", entityId);

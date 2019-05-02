@@ -90,6 +90,9 @@ public class CareerJunction {
                             }
                             // urls that contain add info
                             if (_link.toLowerCase().contains("/jobs/view")) {
+                                if(_link.contains("?unmask")){
+                                    StringUtils.substring(_link, 0, _link.indexOf("?"));
+                                }
                                 urlsToCrawl.add(_link);
                             }
                         }

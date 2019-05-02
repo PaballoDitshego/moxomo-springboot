@@ -161,7 +161,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     @Override
     public AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException {
         Objects.requireNonNull(alertPreference);
-       alertPreferenceRepository.save(alertPreference);
+        alertPreference = alertPreferenceRepository.save(alertPreference);
         BoolQueryBuilder bqb = createBoolQuery(alertPreference);
         elasticsearchTemplate.getClient().prepareIndex(PERCOLATOR_INDEX, PERCOLATOR_INDEX_MAPPING_TYPE, alertPreference.getAlertPreferenceId())
                 .setSource(jsonBuilder()
@@ -175,6 +175,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     }
 
     private List<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
+        logger.info("Finding matching preferences");
         List<AlertPreference> results = new ArrayList<>();
         PercolateQueryBuilder percolateQuery = createPercolateQuery(vacancy);
         // Percolate, by executing the percolator query in the query dsl:
@@ -185,6 +186,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
         if (searchResponse != null) {
             SearchHits searchHits = searchResponse.getHits();
+            logger.info("Number of searchHits {}", searchHits.totalHits);
             if (searchHits != null && searchHits.getTotalHits() > 0) {
                 for (SearchHit hit : searchHits.getHits()) {
                     results.add(alertPreferenceRepository.findById(hit.getId()).get());
@@ -203,26 +205,15 @@ public class VacancySearchServiceImpl implements VacancySearchService {
             boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.JOB_TITLE.getFieldName(), preference.getCriteria().getJobTitle()));
         }
 
-        if (preference.getCriteria().getProvince() != null && preference.getCriteria().getProvince().length > 0) {
-            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
-                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.PROVINCE.getFieldName(), s)).minimumShouldMatch(1);
+        if (preference.getCriteria().getLocation() != null ) {
+            boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()));
 
-                    }
-            );
+
         }
-        if (preference.getCriteria().getTown() != null && preference.getCriteria().getTown().length > 0) {
-            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
-                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.TOWN.getFieldName(), s)).minimumShouldMatch(1);
 
-                    }
-            );
-        }
-        if (preference.getCriteria().getTags() != null && preference.getCriteria().getTags().length > 0) {
-            Arrays.stream(preference.getCriteria().getProvince()).forEach(s -> {
-                        boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.TAGS.getFieldName(), s)).minimumShouldMatch(1);
+        if (preference.getCriteria().getTags() != null) {
+            boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.TAGS.getFieldName(), preference.getCriteria().getTags()));
 
-                    }
-            );
         }
 
         return boolQueryBuilder;
@@ -233,8 +224,8 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         //Build a document to check against the percolator
         XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
         docBuilder.field(PercolatorIndexFields.JOB_TITLE.getFieldName(), vacancy.getJobTitle());
-        docBuilder.array(PercolatorIndexFields.TOWN.getFieldName(), vacancy.getLocation());
-        docBuilder.array(PercolatorIndexFields.PROVINCE.getFieldName(), vacancy.getLocation());
+        docBuilder.field(PercolatorIndexFields.LOCATION.getFieldName(), vacancy.getLocation());
+        docBuilder.field(PercolatorIndexFields.TAGS.getFieldName(), vacancy.getDescription());
         // docBuilder.field(PercolatorIndexFields.TYPE.getFieldName(), book.getType());*/
         docBuilder.endObject();
 

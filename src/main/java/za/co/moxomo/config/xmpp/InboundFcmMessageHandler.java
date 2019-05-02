@@ -1,3 +1,4 @@
+package  za.co.moxomo.config.xmpp;
 
 import org.jivesoftware.smack.packet.Message;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import za.co.moxomo.config.xmpp.FirebaseUpstreamMessage;
 
 @Component
 @Slf4j
@@ -21,7 +23,7 @@ public class InboundFcmMessageHandler {
 
     private static final String ORIGINAL_MESSAGE_ID = "original_message_id";
 
-    @ServiceActivator(inputChannel = "gcmInboundChannel")
+    @ServiceActivator(inputChannel = "fcmInboundChannel")
     public void handleUpstreamMessage(FirebaseUpstreamMessage message) throws Exception {
         String message_type = message.getMessageType();
         if (message_type == null) {
@@ -82,6 +84,7 @@ public class InboundFcmMessageHandler {
       /*  Notification notification = notificationService.loadNotification(messageId);
         if (notification != null) {
             log.info("Push Notification delivery failed, now sending SMS to  {}", notification.getTarget().getPhoneNumber());
+
             messageSendingService.sendMessage(UserMessagingPreference.SMS.name(), notification);
         } else {
             log.info("Received an upstream message without notification, must be chat message");

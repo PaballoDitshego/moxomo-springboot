@@ -19,6 +19,7 @@ import za.co.moxomo.services.VacancySearchService;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
@@ -227,7 +228,11 @@ public class PNet {
                 if (element.className().equals("listing-list at-listing__list-icons_date")) {
                     date = element.getAllElements().last().attr("data-date");
                     logger.debug("date {}", date);
-                    advertDate = sdf.parse(date);
+                    try {
+                        advertDate = sdf.parse(date);
+                    }catch (Exception e){
+                        advertDate = Date.from(Instant.parse(date));
+                    }
                     continue;
                 }
             }

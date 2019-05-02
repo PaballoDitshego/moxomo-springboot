@@ -21,11 +21,11 @@ public class OutboundMessageRouter {
 
         if (route !=null) {
             switch (route) {
-                case "SMS":
+                case "sms":
                     log.info("routing to sms channel");
                     outputChannel = "smsOutboundChannel";
                     break;
-                case "FCM": //
+                case "fcm": //
                     log.info("routing to fcm channel");
                     outputChannel = "fcmOutboundChannel";
                     break;

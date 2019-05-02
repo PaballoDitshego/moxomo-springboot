@@ -1,12 +1,8 @@
 package za.co.moxomo.domain;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Value;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import za.co.moxomo.enums.PushAlert;
-import za.co.moxomo.enums.SmsAlert;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -14,6 +10,10 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder
 @Document
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class AlertPreference {
 
     @Id
@@ -28,10 +28,10 @@ public class AlertPreference {
     private String gcmToken;
 
     @NotNull
-    private SmsAlert smsAlert;
+    private boolean smsAlert;
 
     @NotNull
-    private PushAlert pushAlert;
+    private boolean pushAlert;
 
     @NotNull
     @Valid
@@ -43,11 +43,10 @@ public class AlertPreference {
 
         private String jobTitle;
 
-        private String[] province;
+        private String location;
 
-        private String[] town;
 
-        private String[] tags;
+        private String tags;
 
 
     }
