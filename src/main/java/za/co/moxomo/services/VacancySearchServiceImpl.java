@@ -130,7 +130,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                     .field("company", 2)
                     .field("description")
                     .field("location", 2)
-                    .operator(Operator.AND)
                     .fuzziness(Fuzziness.AUTO)
                     .type(MultiMatchQueryBuilder.Type.MOST_FIELDS);
         }

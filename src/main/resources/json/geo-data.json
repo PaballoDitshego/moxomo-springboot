@@ -21287,12 +21287,29 @@
     "Longitude": 28.259068,
     "ProvinceID": 6
   },
+
+  {
+    "City": "gauteng",
+    "AccentCity": "Gauteng",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.270760,
+    "Longitude": 28.112268,
+    "ProvinceID": 6
+  },
   {
     "City": "waverley",
     "AccentCity": "Waverley",
     "ProvinceName": "Western Cape",
     "Latitude": -33.416546,
     "Longitude": 19.225057,
+    "ProvinceID": 11
+  },
+  {
+    "City": "western cape",
+    "AccentCity": "Western Cape",
+    "ProvinceName": "Western Cape",
+    "Latitude": -38.4351689,
+    "Longitude": 18.9955463,
     "ProvinceID": 11
   },
   {
@@ -21325,6 +21342,14 @@
     "ProvinceName": "Eastern Cape",
     "Latitude": -33.166667,
     "Longitude": 25.633333,
+    "ProvinceID": 5
+  },
+  {
+    "City": "eastern cape",
+    "AccentCity": "Eastern Cape",
+    "ProvinceName": "Eastern Cape",
+    "Latitude": -32.296800,
+    "Longitude": 26.419400,
     "ProvinceID": 5
   },
   {
@@ -24288,6 +24313,14 @@
     "ProvinceID": 8
   },
   {
+    "City": "northern cape",
+    "AccentCity": "Northern Cape",
+    "ProvinceName": "Northern Cape",
+    "Latitude": -28.7809155,
+    "Longitude": 16.5066621,
+    "ProvinceID": 8
+  },
+  {
     "City": "ysterfontein",
     "AccentCity": "Ysterfontein",
     "ProvinceName": "Western Cape",
@@ -24456,6 +24489,14 @@
     "ProvinceID": 10
   },
   {
+    "City": "north west",
+    "AccentCity": "North West",
+    "ProvinceName": "North West",
+    "Latitude": -26.357434,
+    "Longitude": 23.219660,
+    "ProvinceID": 10
+  },
+  {
     "City": "ophondweni",
     "AccentCity": "Ophondweni",
     "ProvinceName": "KwaZulu Natal",
@@ -24517,6 +24558,14 @@
     "ProvinceName": "Free State",
     "Latitude": -30.533333,
     "Longitude": 27.066667,
+    "ProvinceID": 3
+  },
+  {
+    "City": "free state",
+    "AccentCity": "Free State",
+    "ProvinceName": "Free State",
+    "Latitude": -28.6629075,
+    "Longitude": 24.8219575,
     "ProvinceID": 3
   },
   {
@@ -24584,6 +24633,14 @@
     "ProvinceID": 7
   },
   {
+    "City": "mpumalanga",
+    "AccentCity": "Mpumalanga",
+    "ProvinceName": "Mpumalanga",
+    "Latitude": -25.7394012,
+    "Longitude": 29.0172389,
+    "ProvinceID": 7
+  },
+  {
     "City": "oranje",
     "AccentCity": "Oranje",
     "ProvinceName": "North West",
@@ -24643,6 +24700,14 @@
     "City": "orinoco",
     "AccentCity": "Orinoco",
     "ProvinceName": "Limpopo",
+    "Latitude": -23.769862,
+    "Longitude": 28.024389,
+    "ProvinceID": 9
+  },
+  {
+    "City": "limpopo",
+    "AccentCity": "Limpopo",
+    "ProvinceName": "Limpopo",
     "Latitude": -24.76913,
     "Longitude": 31.079188,
     "ProvinceID": 9
@@ -24701,6 +24766,14 @@
     "ProvinceName": "KwaZulu Natal",
     "Latitude": -27.786453,
     "Longitude": 30.118979,
+    "ProvinceID": 2
+  },
+  {
+    "City": "kwazulu natal",
+    "AccentCity": "KwaZulu Natal",
+    "ProvinceName": "KwaZulu Natal",
+    "Latitude": -28.9262824,
+    "Longitude": 28.6383308,
     "ProvinceID": 2
   },
   {
