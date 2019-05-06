@@ -4,23 +4,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import za.co.moxomo.enums.AlertType;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.Date;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
 @Document
 @Builder
 @Data
-public class Alert {
+public class Notification {
 
 	@Id
-	private String alertId;
+	private String id;
 	private String route;
 	private String description;
 	private Instant createdDateTime;

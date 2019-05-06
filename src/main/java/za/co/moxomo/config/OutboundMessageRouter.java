@@ -7,7 +7,7 @@ import org.springframework.integration.annotation.Router;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import za.co.moxomo.domain.Alert;
+import za.co.moxomo.domain.Notification;
 
 @Component
 public class OutboundMessageRouter {
@@ -15,7 +15,7 @@ public class OutboundMessageRouter {
     private Logger log = LoggerFactory.getLogger(OutboundMessageRouter.class);
 
     @Router(inputChannel="requestChannel")
-    public String route(Message<Alert> message) {
+    public String route(Message<Notification> message) {
         String route = (String) message.getHeaders().get("route");
         String outputChannel;
 

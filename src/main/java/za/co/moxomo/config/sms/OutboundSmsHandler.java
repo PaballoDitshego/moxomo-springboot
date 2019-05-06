@@ -6,7 +6,7 @@ import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 
-import za.co.moxomo.domain.Alert;
+import za.co.moxomo.domain.Notification;
 
 @MessageEndpoint
 public class OutboundSmsHandler {
@@ -20,7 +20,7 @@ public class OutboundSmsHandler {
     private NotificationService notificationService;*/
 
     @ServiceActivator(inputChannel = "smsOutboundChannel")
-    public void handleMessage(Message<Alert> message) throws Exception {
+    public void handleMessage(Message<Notification> message) throws Exception {
         log.info("SMS outbound channel received message={}", message.getPayload());
     /*    Notification notification = message.getPayload();
         String destination = notification.getTarget().getPhoneNumber();

@@ -840,7 +840,7 @@ public class MrPriceResponse {
                 ", status='" + status + '\'' +
                 ", suggestedReferralCount=" + suggestedReferralCount +
                 ", targetHireDate='" + targetHireDate + '\'' +
-                ", title='" + title + '\'' +
+                ", keyword='" + title + '\'' +
                 '}';
     }
 }

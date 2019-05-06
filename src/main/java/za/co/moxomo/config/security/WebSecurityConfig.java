@@ -33,6 +33,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/vacancies").permitAll()
                 .antMatchers("/alerts/**").permitAll()
                 .antMatchers("/vacancies/**").permitAll()
+                .antMatchers("/locations/**").permitAll()
                 .antMatchers("/actuator/**").permitAll()
 
                 // Disallow everything else..

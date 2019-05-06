@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 public class AlertPreference {
 
     @Id
-    private String alertPreferenceId;
+    private String id;
 
     @NotNull
     private String title;

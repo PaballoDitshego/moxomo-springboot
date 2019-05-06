@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.dto.wrapper.ResponseWrapper;
+import za.co.moxomo.services.GeoLocationService;
 import za.co.moxomo.services.VacancySearchService;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,11 +24,13 @@ public class SearchServiceRestController {
 
     private TaskExecutor asyncExecutor;
     private VacancySearchService vacancySearchService;
+    private GeoLocationService geoLocationService;
 
     @Autowired
-    public SearchServiceRestController(TaskExecutor asyncExecutor, VacancySearchService vacancySearchService) {
+    public SearchServiceRestController(TaskExecutor asyncExecutor, VacancySearchService vacancySearchService, GeoLocationService  geoLocationService) {
         this.asyncExecutor = asyncExecutor;
         this.vacancySearchService = vacancySearchService;
+        this.geoLocationService=geoLocationService;
     }
 
     @GetMapping(value = "/vacancies")
@@ -78,4 +82,57 @@ public class SearchServiceRestController {
         return deferredResult;
 
     }
+
+
+    @GetMapping(value = "/locations")
+    @CrossOrigin
+    public DeferredResult<ResponseEntity<List<String>>> getLocationSuggestions(@RequestParam String location) throws Exception {
+
+        DeferredResult<ResponseEntity<List<String>>> deferredResult = new DeferredResult<>();
+        CompletableFuture.supplyAsync(() -> {
+            List<String> response;
+            try {
+                response = geoLocationService.getLocationsSuggestions(location);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            return response;
+        }, asyncExecutor).whenCompleteAsync((result, error) -> {
+            if (Objects.nonNull(error)) {
+                deferredResult.setErrorResult(error);
+            } else {
+                deferredResult.setResult(new ResponseEntity<>(result, HttpStatus.OK));
+            }
+        }, asyncExecutor);
+        return deferredResult;
+
+    }
+
+    @GetMapping(value = "/search-keywords")
+    @CrossOrigin
+    public DeferredResult<ResponseEntity<List<String>>> getTitleSuggesttions(@RequestParam String location) throws Exception {
+
+        DeferredResult<ResponseEntity<List<String>>> deferredResult = new DeferredResult<>();
+        CompletableFuture.supplyAsync(() -> {
+            List<String> response;
+            try {
+                response = geoLocationService.getLocationsSuggestions(location);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            return response;
+        }, asyncExecutor).whenCompleteAsync((result, error) -> {
+            if (Objects.nonNull(error)) {
+                deferredResult.setErrorResult(error);
+            } else {
+                deferredResult.setResult(new ResponseEntity<>(result, HttpStatus.OK));
+            }
+        }, asyncExecutor);
+        return deferredResult;
+
+    }
+
+
 }

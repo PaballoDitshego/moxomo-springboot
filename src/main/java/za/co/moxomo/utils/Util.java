@@ -3,7 +3,7 @@ package za.co.moxomo.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import za.co.moxomo.domain.Alert;
+import za.co.moxomo.domain.Notification;
 import za.co.moxomo.domain.AlertPreference;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.enums.AlertRoute;
@@ -36,14 +36,14 @@ public class Util {
         return valid;
     }
 
-    public static Alert generateAlert(Vacancy vacancy, AlertPreference alertPreference) {
-        Alert alert = Alert.builder().alertId(UUID.randomUUID().toString())
+    public static Notification generateNotification(Vacancy vacancy, AlertPreference alertPreference) {
+        Notification notification = Notification.builder().id(UUID.randomUUID().toString())
                 .description(vacancy.getDescription())
-                .createdDateTime(Instant.now()).advertDate(vacancy.getAdvertDate())
-                .imageUrl(vacancy.getImageUrl()).entityId(vacancy.getId()).entityType(Vacancy.class.getTypeName())
+                .createdDateTime(Instant.now()).advertDate(vacancy.getAdvertDate()).url(vacancy.getUrl()).gcmToken(alertPreference.getGcmToken())
+                .imageUrl(vacancy.getImageUrl()).entityId(vacancy.getId()).entityType(Vacancy.class.getTypeName()).mobileNumber(alertPreference.getMobileNumber())
                 .location(vacancy.getLocation()).route((alertPreference.isPushAlert())?
                         AlertRoute.FCM.getRoute():AlertRoute.SMS.getRoute()).build();
 
-        return alert;
+        return notification;
     }
 }

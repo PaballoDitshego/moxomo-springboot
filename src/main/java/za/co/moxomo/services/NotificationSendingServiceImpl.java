@@ -7,33 +7,34 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Service;
 
-import za.co.moxomo.domain.Alert;
+import za.co.moxomo.domain.Notification;
 
 @Service
 @Slf4j
-public class AlertSendingServiceImpl implements AlertSendingService {
+public class NotificationSendingServiceImpl implements NotificationSendingService {
 
     @Autowired
     private MessageChannel requestChannel;
 
 
+
     @Override
-    public void sendAlert(Alert alert) {
-        Message<Alert> message = createMessage(alert, alert.getRoute());
+    public void sendAlert(Notification notification) {
+        Message<Notification> message = createMessage(notification, notification.getRoute());
         log.info("Sending message {}", message.getPayload().toString() );
         requestChannel.send(message);
 
     }
 
     @Override
-    public void sendAlert(String destination, Alert alert) {
-        Message<Alert> message = createMessage(alert, destination);
+    public void sendAlert(String destination, Notification notification) {
+        Message<Notification> message = createMessage(notification, destination);
         requestChannel.send(message);
 
     }
 
-    private Message<Alert> createMessage(Alert alert, String route) {
-        return MessageBuilder.withPayload(alert)
+    private Message<Notification> createMessage(Notification notification, String route) {
+        return MessageBuilder.withPayload(notification)
                 .setHeader("route", route)
                 .build();
 

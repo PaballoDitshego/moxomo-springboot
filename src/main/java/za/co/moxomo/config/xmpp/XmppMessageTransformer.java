@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import za.co.moxomo.domain.Alert;
+import za.co.moxomo.domain.Notification;
 
 
 
@@ -28,10 +28,10 @@ public class XmppMessageTransformer {
     public Message<org.jivesoftware.smack.packet.Message> transform(Message message) throws Exception {
 
         Message<org.jivesoftware.smack.packet.Message> gcmMessage = null;
-        if (message.getPayload() instanceof Alert) {
-            Alert notification = (Alert) message.getPayload();
+        if (message.getPayload() instanceof Notification) {
+            Notification notification = (Notification) message.getPayload();
             gcmMessage = constructGcmMessage(notification);
-            log.info("Message with id {}, transformed to {}", notification.getAlertId(),
+            log.info("Message with id {}, transformed to {}", notification.getId(),
                     gcmMessage != null && gcmMessage.getPayload() != null ? gcmMessage.getPayload().toXML(FirebaseXmppMessageCodec.GCM_NAMESPACE) : "null");
         } else {
             gcmMessage = FirebaseXmppMessageCodec.encode(TOPICS.concat("keepalive"), UUID.randomUUID().toString(), null);
@@ -40,10 +40,10 @@ public class XmppMessageTransformer {
 
     }
 
-    private Message<org.jivesoftware.smack.packet.Message> constructGcmMessage(Alert notification) throws JsonProcessingException {
+    private Message<org.jivesoftware.smack.packet.Message> constructGcmMessage(Notification notification) throws JsonProcessingException {
 
         String registrationID = notification.getGcmToken();
-        String messageId = notification.getAlertId();
+        String messageId = notification.getId();
 
         log.info("Attempting to transform message for registration ID {}, with message id {}", messageId, registrationID);
         String collapseKey = generateCollapseKey(notification);
@@ -67,7 +67,7 @@ public class XmppMessageTransformer {
         return FirebaseXmppMessageCodec.encode(registrationID, messageId, collapseKey, dataPart);
     }
 
-    private String generateCollapseKey(Alert notification) {
+    private String generateCollapseKey(Notification notification) {
         StringBuilder sb = new StringBuilder();
         switch (notification.getAlertType()) {
 
@@ -78,9 +78,9 @@ public class XmppMessageTransformer {
     }
 
 
-    private Map<String, Object> createDataPart(Alert notification) {
+    private Map<String, Object> createDataPart(Notification notification) {
         return FirebaseXmppMessageCodec.createDataPart(
-                notification.getAlertId(),
+                notification.getId(),
                 notification.getTitle(),
                 notification.getDescription(),
                 notification.getEntityId(),

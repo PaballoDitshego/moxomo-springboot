@@ -8,14 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.moxomo.domain.AlertPreference;
 import za.co.moxomo.dto.AlertDTO;
-import za.co.moxomo.enums.PushAlert;
-import za.co.moxomo.enums.SmsAlert;
 import za.co.moxomo.repository.mongodb.AlertPreferenceRepository;
 import za.co.moxomo.services.VacancySearchService;
 
 import javax.validation.Valid;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
@@ -47,7 +44,7 @@ public class AlertServiceRestController {
     @PostMapping(value = "/create",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AlertPreference> create(@Valid @RequestBody AlertDTO alertDTO) throws Exception {
         AlertPreference preference = modelMapper.map(alertDTO, AlertPreference.class);
-        preference.setAlertPreferenceId(UUID.randomUUID().toString());
+        preference.setId(UUID.randomUUID().toString());
         AlertPreference.Criteria criteria=  AlertPreference.Criteria.builder()
                 .jobTitle(alertDTO.getTitle()).location(alertDTO.getLocation()).build();
         preference.setCriteria(criteria);
@@ -58,4 +55,12 @@ public class AlertServiceRestController {
         log.info("AlertPreference {}", preference);
         return ResponseEntity.ok(vacancySearchService.createSearchPreference(preference));
     }
+
+    @PostMapping(value = "/fcmtoken",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Boolean> create(@Valid @RequestParam String newtoken, @RequestParam String oldToken) throws Exception {
+
+        return ResponseEntity.ok(true);
+    }
+
+
 }

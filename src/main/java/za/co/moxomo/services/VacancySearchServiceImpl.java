@@ -5,13 +5,11 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.GaussDecayFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
@@ -33,18 +31,20 @@ import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
 import za.co.moxomo.domain.AlertPreference;
+import za.co.moxomo.domain.Notification;
+import za.co.moxomo.domain.SearchSuggestionKeyword;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.enums.PercolatorIndexFields;
 import za.co.moxomo.dto.wrapper.SearchResults;
 import za.co.moxomo.repository.mongodb.AlertPreferenceRepository;
 import za.co.moxomo.repository.elasticsearch.VacancySearchRepository;
+import za.co.moxomo.repository.mongodb.SearchSuggestionKeywordRepository;
 import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,12 +65,17 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     private VacancySearchRepository vacancySearchRepository;
     private ElasticsearchOperations elasticsearchTemplate;
     private AlertPreferenceRepository alertPreferenceRepository;
+    private NotificationSendingService notificationSendingService;
+    private SearchSuggestionKeywordRepository searchSuggestionKeywordRepository;
 
     @Autowired
-    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository, ElasticsearchOperations elasticsearchTemplate) {
+    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository, ElasticsearchOperations elasticsearchTemplate,
+                                    NotificationSendingService notificationSendingService, SearchSuggestionKeywordRepository searchSuggestionKeywordRepository) {
         this.vacancySearchRepository = vacancySearchRepository;
         this.elasticsearchTemplate = elasticsearchTemplate;
         this.alertPreferenceRepository = alertPreferenceRepository;
+        this.notificationSendingService = notificationSendingService;
+        this.searchSuggestionKeywordRepository=searchSuggestionKeywordRepository;
     }
 
     @Override
@@ -79,9 +84,20 @@ public class VacancySearchServiceImpl implements VacancySearchService {
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
         try {
-            vacancy = vacancySearchRepository.save(vacancy);
+            final Vacancy savedVacancy = vacancySearchRepository.save(vacancy);
             logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
             List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
+            alertPreferences.forEach(alertPreference -> {
+                Notification notification = Util.generateNotification(savedVacancy,alertPreference);
+                notificationSendingService.sendAlert(notification);
+            });
+            if(Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getJobTitle()))){
+                searchSuggestionKeywordRepository.save(new SearchSuggestionKeyword(vacancy.getJobTitle()));
+            }
+            if(Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getCompany()))){
+                searchSuggestionKeywordRepository.save(new SearchSuggestionKeyword(vacancy.getCompany()));
+            }
+
             
 
         } catch (Exception e) {
@@ -114,8 +130,9 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                     .field("company", 2)
                     .field("description")
                     .field("location", 2)
-                    //     .field("additionalTokens")
-                    .type(MultiMatchQueryBuilder.Type.PHRASE);
+                    .operator(Operator.AND)
+                    .fuzziness(Fuzziness.AUTO)
+                    .type(MultiMatchQueryBuilder.Type.MOST_FIELDS);
         }
         final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "3h", "2h", 0.5);
         final FunctionScoreQueryBuilder query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), gaussDecayFunctionBuilder);
@@ -130,6 +147,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 .withPageable(Objects.isNull(searchString) ?
                         PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate") : pageRequest)
                 .build();
+
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
         logger.info("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
         int totalNumberOfPages = 1;
@@ -155,7 +173,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         vacanciesToDelete.forEach(vacancySearchRepository::delete);
         logger.info("The number of vacancies after deletion is {}", vacancySearchRepository.count());
 
-
     }
 
     @Override
@@ -163,7 +180,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         Objects.requireNonNull(alertPreference);
         alertPreference = alertPreferenceRepository.save(alertPreference);
         BoolQueryBuilder bqb = createBoolQuery(alertPreference);
-        elasticsearchTemplate.getClient().prepareIndex(PERCOLATOR_INDEX, PERCOLATOR_INDEX_MAPPING_TYPE, alertPreference.getAlertPreferenceId())
+        elasticsearchTemplate.getClient().prepareIndex(PERCOLATOR_INDEX, PERCOLATOR_INDEX_MAPPING_TYPE, alertPreference.getId())
                 .setSource(jsonBuilder()
                         .startObject()
                         .field(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(), bqb) // Register the query
@@ -207,7 +224,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
         if (preference.getCriteria().getLocation() != null ) {
             boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()));
-
 
         }
 
