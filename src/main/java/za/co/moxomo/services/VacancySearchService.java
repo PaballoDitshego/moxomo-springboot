@@ -5,6 +5,7 @@ import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.dto.wrapper.SearchResults;
 
 import java.io.IOException;
+import java.util.List;
 
 
 public interface VacancySearchService {
@@ -20,4 +21,6 @@ public interface VacancySearchService {
     void deleteOldVacancies();
 
     AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException;
+
+    List<String > getSearchSuggestions(String term);
 }

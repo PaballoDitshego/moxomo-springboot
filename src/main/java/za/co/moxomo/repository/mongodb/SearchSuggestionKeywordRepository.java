@@ -9,9 +9,9 @@ import java.util.List;
 public interface SearchSuggestionKeywordRepository extends MongoRepository<SearchSuggestionKeyword, String> {
 
     @Query("{ 'keyword' : { '$regex' : ?0 , $options: 'i'}}")
-    List<SearchSuggestionKeywordRepository> findAllByKeywordIgnoreCase(String keyword);
+    List<SearchSuggestionKeyword> findAllByKeywordIgnoreCase(String keyword);
 
-    SearchSuggestionKeywordRepository findOneByKeyword(String keyword);
+    SearchSuggestionKeyword findOneByKeyword(String keyword);
 
 
 }

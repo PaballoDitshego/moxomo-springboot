@@ -109,15 +109,15 @@ public class SearchServiceRestController {
 
     }
 
-    @GetMapping(value = "/search-keywords")
+    @GetMapping(value = "/keywords")
     @CrossOrigin
-    public DeferredResult<ResponseEntity<List<String>>> getTitleSuggesttions(@RequestParam String location) throws Exception {
+    public DeferredResult<ResponseEntity<List<String>>> getTitleSuggestions(@RequestParam String term) throws Exception {
 
         DeferredResult<ResponseEntity<List<String>>> deferredResult = new DeferredResult<>();
         CompletableFuture.supplyAsync(() -> {
             List<String> response;
             try {
-                response = geoLocationService.getLocationsSuggestions(location);
+                response = vacancySearchService.getSearchSuggestions(term);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);

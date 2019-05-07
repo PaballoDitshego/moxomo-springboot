@@ -46,7 +46,6 @@ public class Vacancy {
 
     @Field(type = FieldType.Date)
     private Date advertDate;
-    //private Date closingDate;
     private String link;
     private String contractType;
     private String imageUrl;
@@ -59,8 +58,8 @@ public class Vacancy {
     private String additionalTokens;
     private Date closingDate;
     private boolean webViewViewable = true;
-   /* @GeoPointField
-    private GeoPoint geoPoint;*/
+    @GeoPointField
+    private GeoPoint geoPoint;
 
     public Vacancy() {
 
@@ -90,14 +89,6 @@ public class Vacancy {
         this.url = url.trim();
     }
 
-
-    /* public Date getClosingDate() {
-        return closingDate;
-    }
-
-    public void setClosingDate(Date closingDate) {
-        this.closingDate = closingDate;
-    }*/
 
 
 }

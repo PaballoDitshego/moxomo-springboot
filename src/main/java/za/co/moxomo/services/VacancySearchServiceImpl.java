@@ -47,6 +47,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -75,7 +76,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         this.elasticsearchTemplate = elasticsearchTemplate;
         this.alertPreferenceRepository = alertPreferenceRepository;
         this.notificationSendingService = notificationSendingService;
-        this.searchSuggestionKeywordRepository=searchSuggestionKeywordRepository;
+        this.searchSuggestionKeywordRepository = searchSuggestionKeywordRepository;
     }
 
     @Override
@@ -88,17 +89,16 @@ public class VacancySearchServiceImpl implements VacancySearchService {
             logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
             List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
             alertPreferences.forEach(alertPreference -> {
-                Notification notification = Util.generateNotification(savedVacancy,alertPreference);
+                Notification notification = Util.generateNotification(savedVacancy, alertPreference);
                 notificationSendingService.sendAlert(notification);
             });
-            if(Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getJobTitle()))){
+            if (Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getJobTitle()))) {
                 searchSuggestionKeywordRepository.save(new SearchSuggestionKeyword(vacancy.getJobTitle()));
             }
-            if(Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getCompany()))){
+            if (Objects.isNull(searchSuggestionKeywordRepository.findOneByKeyword(vacancy.getCompany()))) {
                 searchSuggestionKeywordRepository.save(new SearchSuggestionKeyword(vacancy.getCompany()));
             }
 
-            
 
         } catch (Exception e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
@@ -127,9 +127,9 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
                     searchString).field("jobTitle", 5)
-                    .field("company", 2)
+                    .field("company", 5)
                     .field("description")
-                    .field("location", 2)
+                    .field("location", 8)
                     .fuzziness(Fuzziness.AUTO)
                     .type(MultiMatchQueryBuilder.Type.MOST_FIELDS);
         }
@@ -190,6 +190,12 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         return alertPreference;
     }
 
+    @Override
+    public List<String> getSearchSuggestions(String term) {
+        return searchSuggestionKeywordRepository.findAllByKeywordIgnoreCase(term)
+                .stream().map(s -> s.getKeyword()).collect(Collectors.toList());
+    }
+
     private List<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
         logger.info("Finding matching preferences");
         List<AlertPreference> results = new ArrayList<>();
@@ -221,7 +227,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
             boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.JOB_TITLE.getFieldName(), preference.getCriteria().getJobTitle()));
         }
 
-        if (preference.getCriteria().getLocation() != null ) {
+        if (preference.getCriteria().getLocation() != null) {
             boolQueryBuilder.must(QueryBuilders.termsQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()));
 
         }
