@@ -39,6 +39,6 @@ public class GeoLocationServiceImpl implements GeoLocationService {
     @Override
     public List<String> getLocationsSuggestions(String term){
         return geoLocationRepository.findAllByAccentCityIgnoreCase(term).stream()
-                .map(geoLocation->geoLocation.accentCity.concat(",").concat(geoLocation.provinceName)).collect(Collectors.toList());
+                .map(geoLocation->geoLocation.accentCity.concat(", ").concat(geoLocation.provinceName)).collect(Collectors.toList());
     }
 }
