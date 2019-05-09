@@ -1,6 +1,8 @@
 package za.co.moxomo.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
@@ -59,6 +61,8 @@ public class Vacancy {
     private Date closingDate;
     private boolean webViewViewable = true;
     @GeoPointField
+    @JsonIgnore
+    @ApiModelProperty(hidden=true)
     private GeoPoint geoPoint;
 
     public Vacancy() {

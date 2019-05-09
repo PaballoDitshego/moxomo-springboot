@@ -11,7 +11,7 @@ public interface SearchSuggestionKeywordRepository extends MongoRepository<Searc
     @Query("{ 'keyword' : { '$regex' : ?0 , $options: 'i'}}")
     List<SearchSuggestionKeyword> findAllByKeywordIgnoreCase(String keyword);
 
-    SearchSuggestionKeyword findOneByKeyword(String keyword);
+    SearchSuggestionKeyword findByKeyword(String keyword);
 
 
 }

@@ -125,7 +125,7 @@ public class FirstRand {
                         vacancy.setQualifications(qualifications);
                         qualifications = StringUtils.remove(qualifications, "experience and qualifications");
                         logger.debug("qualifications {}", qualifications);
-                        String title = doc.select("meta[name=twitter:title]").first()
+                        String title = doc.select("meta[name=twitter:keyword]").first()
                                 .attr("content").trim();
                         vacancy.setJobTitle(title);
                         String imageUrl = doc.select("meta[name=twitter:image]").first()
@@ -133,7 +133,7 @@ public class FirstRand {
                         vacancy.setImageUrl(imageUrl);
                         vacancy.setUrl(url);
 
-                        logger.debug("title {}", title);
+                        logger.debug("keyword {}", title);
                         logger.debug("imageUrl {}", imageUrl);
                         Element additionalElem = doc.getElementsByClass("detail-block").last();
                         StringBuilder builder = new StringBuilder();

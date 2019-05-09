@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "logoImageLink",
         "companyName",
         "companyNameLink",
-        "jobTitle",
+        "keyword",
         "theme",
         "previewMode"
 })
@@ -28,7 +28,7 @@ public class AdditionalInfo {
     private String companyName;
     @JsonProperty("companyNameLink")
     private String companyNameLink;
-    @JsonProperty("jobTitle")
+    @JsonProperty("keyword")
     private String jobTitle;
     @JsonProperty("theme")
     private String theme;
@@ -85,12 +85,12 @@ public class AdditionalInfo {
         this.companyNameLink = companyNameLink;
     }
 
-    @JsonProperty("jobTitle")
+    @JsonProperty("keyword")
     public String getJobTitle() {
         return jobTitle;
     }
 
-    @JsonProperty("jobTitle")
+    @JsonProperty("keyword")
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
     }

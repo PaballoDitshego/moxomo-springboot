@@ -147,9 +147,9 @@ public class Nedbank {
             
 
 
-            jobTitle = doc.getElementById("job-title").text()
+            jobTitle = doc.getElementById("job-keyword").text()
                     .trim();
-            logger.info("job title {}", jobTitle);
+            logger.info("job keyword {}", jobTitle);
             location = doc.getElementsByClass("jobGeoLocation").first().text().trim();
             logger.info("location {}", location);
             description = doc.getElementsByClass("jobdescription").first().text().trim();

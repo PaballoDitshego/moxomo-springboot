@@ -73,7 +73,7 @@ public class Absa {
                 String url = jobUrl.concat(jobId).concat("&tz=GMT%2B02%3A00");
                 logger.debug("Url {}", url);
                 String jobTitle = requisitionList.getColumn().get(0);
-                logger.debug("job title  {}", jobTitle);
+                logger.debug("job keyword  {}", jobTitle);
                 String date = requisitionList.getColumn().get(2);
                 Date advertDate = sdf.parse(date);
                 Instant instant = advertDate.toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour())).plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));

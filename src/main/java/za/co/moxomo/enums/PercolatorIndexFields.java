@@ -7,9 +7,11 @@ import lombok.Getter;
 public enum PercolatorIndexFields {
 
     PERCOLATOR_QUERY("query", "percolator"),
-    JOB_TITLE("jobTitle", "text"),
+    JOBTITLE("keyword", "text"),
+    COMPANY("company", "text"),
     LOCATION("location", "text"),
-    TAGS("tags", "text");
+    GEOPOINT("geopoint", "geo_point");
+
 
     private final String fieldName;
     private final String fieldType;

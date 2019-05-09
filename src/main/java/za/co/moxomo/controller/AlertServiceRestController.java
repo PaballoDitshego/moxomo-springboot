@@ -43,10 +43,13 @@ public class AlertServiceRestController {
 
     @PostMapping(value = "/create",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AlertPreference> create(@Valid @RequestBody AlertDTO alertDTO) throws Exception {
+        log.info("Alert create requuest {}", alertDTO.toString());
         AlertPreference preference = modelMapper.map(alertDTO, AlertPreference.class);
         preference.setId(UUID.randomUUID().toString());
         AlertPreference.Criteria criteria=  AlertPreference.Criteria.builder()
-                .jobTitle(alertDTO.getTitle()).location(alertDTO.getLocation()).build();
+                .keyword(alertDTO.getTitle()).location(alertDTO.getLocation()).build();
+        preference.setMobileNumber(alertDTO.getMobileNumber());
+        preference.setGcmToken(alertDTO.getGcmToken());
         preference.setCriteria(criteria);
         preference.setPushAlert(alertDTO.isPush());
         preference.setSmsAlert(alertDTO.isSms());

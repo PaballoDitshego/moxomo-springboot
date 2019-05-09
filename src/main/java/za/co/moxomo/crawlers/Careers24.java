@@ -137,7 +137,7 @@ public class Careers24 {
             Date advertDate;
             SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
 
-            jobTitle = doc.select("meta[property=og:title]").first()
+            jobTitle = doc.select("meta[property=og:keyword]").first()
                     .attr("content").trim();
             logger.debug("jobtitle {}", jobTitle);
             imageUrl = doc.select("meta[property=og:image]").first()

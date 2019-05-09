@@ -187,8 +187,8 @@ public class PNet {
             }
             if (Objects.isNull(company)) {
                 Elements elements = doc.getElementsByClass("at-listing-nav-company-name-link");
-                if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("title")) {
-                    company = elements.first().attr("title");
+                if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("keyword")) {
+                    company = elements.first().attr("keyword");
                 }
 
             }
@@ -244,7 +244,7 @@ public class PNet {
             }
             if (Objects.isNull(jobTitle) || jobTitle.isEmpty()) {
                 logger.info("Else {}", url);
-                jobTitle = doc.getElementsByClass("listing__job-title").first().text();
+                jobTitle = doc.getElementsByClass("listing__job-keyword").first().text();
                 company = doc.getElementsByClass("at-listing-nav-company-name-link").first().text();
                 location = doc.getElementsByClass("listing-list at-listing__list-icons_location").first().text();
                 date = doc.getElementsByClass("date-time-ago").first().attr("data-date");

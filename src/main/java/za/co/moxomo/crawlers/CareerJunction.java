@@ -141,7 +141,7 @@ public class CareerJunction {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
 
-            jobTitle = StringUtils.substringBefore(doc.select("meta[property=og:title]").first()
+            jobTitle = StringUtils.substringBefore(doc.select("meta[property=og:keyword]").first()
                     .attr("content").trim(), " at ");
             imageUrl = doc.select("meta[property=og:image]").first()
                     .attr("content").trim();
