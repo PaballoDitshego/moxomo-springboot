@@ -16,19 +16,16 @@ public class GeoLocationServiceImpl implements GeoLocationService {
     @Autowired
     public GeoLocationServiceImpl(GeoLocationRepository geoLocationRepository){
         this.geoLocationRepository=geoLocationRepository;
-
     }
 
     @Override
     public void saveGeoLocation(GeoLocation geoLocation) {
         geoLocationRepository.save(geoLocation);
-
     }
 
     @Override
     public void saveGeoLocations(List<GeoLocation> geoLocations) {
         geoLocationRepository.saveAll(geoLocations);
-
     }
 
     @Override
@@ -41,4 +38,9 @@ public class GeoLocationServiceImpl implements GeoLocationService {
         return geoLocationRepository.findAllByAccentCityIgnoreCase(term).stream()
                 .map(geoLocation->geoLocation.accentCity.concat(", ").concat(geoLocation.provinceName)).collect(Collectors.toList());
     }
+
+    @Override
+    public GeoLocation getByCityAndProvince(String city, String province){
+        return geoLocationRepository.findByAccentCityIgnoreCaseAndProvinceNameIgnoreCase(city,province);
+ }
 }

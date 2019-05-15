@@ -13,4 +13,6 @@ public interface GeoLocationService {
     long geoLocationCount();
 
     List<String> getLocationsSuggestions(String term);
+
+    GeoLocation getByCityAndProvince(String city, String province);
 }
