@@ -68,10 +68,8 @@ public class Config {
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     private static final String VACANCIES="vacancies";
-    public static final String PERCOLATOR_INDEX = "job_alerts";
-    public static final String PERCOLATOR_INDEX_MAPPING_TYPE = "docs";
-
-
+    public static final String PERCOLATOR_INDEX = "percolator_index";
+    public static final String PERCOLATOR_INDEX_MAPPING_TYPE = "_doc";
 
 
     @Value("${mongodb.host}")

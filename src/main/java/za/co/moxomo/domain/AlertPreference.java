@@ -49,7 +49,6 @@ public class AlertPreference {
 
         private String location;
 
-
         @GeoSpatialIndexed
         private double[] point;
 

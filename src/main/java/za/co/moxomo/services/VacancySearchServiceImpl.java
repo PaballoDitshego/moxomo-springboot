@@ -70,15 +70,17 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     private AlertPreferenceRepository alertPreferenceRepository;
     private NotificationSendingService notificationSendingService;
     private SearchSuggestionKeywordRepository searchSuggestionKeywordRepository;
+    private GeoService geoService;
 
     @Autowired
     public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository, ElasticsearchOperations elasticsearchTemplate,
-                                    NotificationSendingService notificationSendingService, SearchSuggestionKeywordRepository searchSuggestionKeywordRepository) {
+                                    NotificationSendingService notificationSendingService, SearchSuggestionKeywordRepository searchSuggestionKeywordRepository, GeoService geoService) {
         this.vacancySearchRepository = vacancySearchRepository;
         this.elasticsearchTemplate = elasticsearchTemplate;
         this.alertPreferenceRepository = alertPreferenceRepository;
         this.notificationSendingService = notificationSendingService;
         this.searchSuggestionKeywordRepository = searchSuggestionKeywordRepository;
+        this.geoService = geoService;
     }
 
     @Override
@@ -87,8 +89,9 @@ public class VacancySearchServiceImpl implements VacancySearchService {
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
         try {
+            vacancy = geoService.geoCode(vacancy);
             final Vacancy savedVacancy = vacancySearchRepository.save(vacancy);
-            logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
+            logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedVacancy));
             List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
             alertPreferences.forEach(alertPreference -> {
                 Notification notification = Util.generateNotification(savedVacancy, alertPreference);
@@ -114,6 +117,11 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         return vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).size() > 0;
     }
 
+    @Override
+    public Vacancy getByCompanyAndOfferId(Vacancy vacancy) {
+        return vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).get(0);
+    }
+
 
     @Override
     public Vacancy getVacancy(final String id) {
@@ -125,14 +133,18 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     public SearchResults search(String searchString, int offset, int limit) {
         logger.info("Running query {}", searchString);
 
+
         MultiMatchQueryBuilder multiMatchQuery = null;
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
-                    searchString).field("keyword", 5)
+                    searchString).field("jobTitle", 5)
                     .field("company", 5)
-                    .field("description")
+                    // .field("description")
                     .field("location", 8)
+                    //.minimumShouldMatch("2")
                     .fuzziness(Fuzziness.AUTO)
+                    .fuzzyTranspositions(false)
+
                     .type(MultiMatchQueryBuilder.Type.MOST_FIELDS);
         }
         final GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "3h", "2h", 0.5);
@@ -140,7 +152,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         query.boostMode(CombineFunction.MULTIPLY);
 
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit);
-        final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "keyword", "description", "location",
+        final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
                 "advertDate", "imageUrl", "url", "webViewViewable", "company"}, null);
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices(JOBS)
                 .withQuery(query)
@@ -150,7 +162,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 .build();
 
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
-        logger.info("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
+        logger.debug("Found {} matching items for searchString {}", totalNumberOfElements, searchQuery);
         int totalNumberOfPages = 1;
         if (totalNumberOfElements > 0) {
             totalNumberOfPages = (totalNumberOfElements / limit) == 0 ? 1 : (totalNumberOfElements / limit);
@@ -169,11 +181,15 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.rangeQuery("advertDate")
                         .lte(date));
-
         Iterable<Vacancy> vacanciesToDelete = vacancySearchRepository.search(queryBuilder);
         vacanciesToDelete.forEach(vacancySearchRepository::delete);
         logger.info("The number of vacancies after deletion is {}", vacancySearchRepository.count());
 
+    }
+
+    @Override
+    public void delete(Vacancy vacancy) {
+        vacancySearchRepository.delete(vacancy);
     }
 
     @Override
@@ -207,7 +223,6 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 .setQuery(percolateQuery)
                 .execute()
                 .actionGet();
-
         if (searchResponse != null) {
             SearchHits searchHits = searchResponse.getHits();
             logger.info("Number of searchHits {}", searchHits.totalHits);
@@ -217,51 +232,44 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 }
             }
         }
-
         return results;
     }
 
 
-    private BoolQueryBuilder createBoolQuery(AlertPreference preference) {
+    private BoolQueryBuilder
+    createBoolQuery(AlertPreference preference) {
+
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        if (preference.getCriteria().getKeyword() != null) {
-            boolQueryBuilder.should(QueryBuilders.termQuery(PercolatorIndexFields.JOBTITLE.getFieldName(), preference.getCriteria().getKeyword()));
-        }
-        if (preference.getCriteria().getKeyword() != null) {
-            boolQueryBuilder.should(QueryBuilders.termQuery(PercolatorIndexFields.COMPANY.getFieldName(), preference.getCriteria().getKeyword()));
-        }
-
+        boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.KEYWORD.getFieldName(), preference.getCriteria().getKeyword()).operator(Operator.AND).lenient(true));
+        boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.COMPANY.getFieldName(), preference.getCriteria().getKeyword()).lenient(true));
         if (preference.getCriteria().getLocation() != null) {
-            boolQueryBuilder.should(QueryBuilders.termsQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()));
+            boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()).lenient(true));
         }
         if (preference.getCriteria().getPoint() != null) {
             double[] point = preference.getCriteria().getPoint();
-            boolQueryBuilder.must(QueryBuilders.geoDistanceQuery(PercolatorIndexFields.GEOPOINT.getFieldName()).point(new GeoPoint(point[0], point[1])).distance(50, DistanceUnit.KILOMETERS));
-
+            boolQueryBuilder.filter(QueryBuilders.geoDistanceQuery(PercolatorIndexFields.GEOPOINT.getFieldName()).point(new GeoPoint(point[0], point[1])).distance(50, DistanceUnit.KILOMETERS));
         }
-        boolQueryBuilder.minimumShouldMatch(2
-
-        );
+        boolQueryBuilder.minimumShouldMatch(1);
 
         return boolQueryBuilder;
     }
 
 
     private PercolateQueryBuilder createPercolateQuery(Vacancy vacancy) throws IOException {
-        //Build a document to check against the percolator
         XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
-        docBuilder.field(PercolatorIndexFields.JOBTITLE.getFieldName(), vacancy.getJobTitle());
+        docBuilder.field(PercolatorIndexFields.KEYWORD.getFieldName(), vacancy.getJobTitle());
         docBuilder.field(PercolatorIndexFields.COMPANY.getFieldName(), vacancy.getCompany());
         docBuilder.field(PercolatorIndexFields.LOCATION.getFieldName(), vacancy.getLocation());
-        if (Objects.nonNull(vacancy.getGeoPoint())) {
-           // docBuilder.latlon(vacancy.getGeoPoint().getLat(), vacancy.getGeoPoint().getLon());
-            docBuilder.startObject(PercolatorIndexFields.GEOPOINT.getFieldName())
-                    .field("lat", vacancy.getGeoPoint().getLat()).field("lon", vacancy.getGeoPoint().getLon());
-        }
-        docBuilder.endObject();
+        docBuilder.startObject(PercolatorIndexFields.GEOPOINT.getFieldName())
+                .field("lat", vacancy.getGeoPoint().getLat()).field("lon", vacancy.getGeoPoint().getLon());
         docBuilder.endObject();
 
+        docBuilder.endObject();
+        logger.info("Percolator query {}", BytesReference.bytes(docBuilder).utf8ToString());
+
+       /* return new PercolateQueryBuilder(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(),
+                BytesReference.bytes(docBuilder));*/
         return new PercolateQueryBuilder(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(),
                 BytesReference.bytes(docBuilder),
                 XContentType.JSON);

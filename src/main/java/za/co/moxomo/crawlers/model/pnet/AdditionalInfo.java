@@ -28,7 +28,7 @@ public class AdditionalInfo {
     private String companyName;
     @JsonProperty("companyNameLink")
     private String companyNameLink;
-    @JsonProperty("keyword")
+    @JsonProperty("jobTitle")
     private String jobTitle;
     @JsonProperty("theme")
     private String theme;

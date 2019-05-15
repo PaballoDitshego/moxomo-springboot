@@ -8,6 +8,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Service;
 
 import za.co.moxomo.domain.Notification;
+import za.co.moxomo.repository.mongodb.NotificationRepository;
 
 @Service
 @Slf4j
@@ -16,11 +17,15 @@ public class NotificationSendingServiceImpl implements NotificationSendingServic
     @Autowired
     private MessageChannel requestChannel;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
 
 
     @Override
     public void sendAlert(Notification notification) {
         Message<Notification> message = createMessage(notification, notification.getRoute());
+        notificationRepository.save(notification);
         log.info("Sending message {}", message.getPayload().toString() );
         requestChannel.send(message);
 

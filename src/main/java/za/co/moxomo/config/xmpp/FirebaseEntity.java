@@ -2,14 +2,17 @@ package za.co.moxomo.config.xmpp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.util.Map;
 
+@Data
 public class FirebaseEntity {
 
 
     @JsonProperty("message_id")
     private String messageId;
+    @JsonProperty("to")
     private String to;
 
     @JsonProperty("collapse_key")
@@ -20,7 +23,7 @@ public class FirebaseEntity {
     private boolean delayWhileIdle = false;
     @JsonProperty("delivery_receipt_requested")
     private boolean deliveryReceiptRequested =true;
-    private final String priority = "high";
+    private final String priority = "normal";
 
     private Map<String,Object> notification;
     private Map<String,Object> data;
@@ -29,8 +32,16 @@ public class FirebaseEntity {
     
     
     public FirebaseEntity(String messageId, String to, String collapseKey, Map<String, Object> notification, Map<String, Object> data) {
+        this.messageId=messageId;
+        this.to=to;
+        this.collapseKey=collapseKey;
+        this.notification=notification;
+        this.data=data;
     }
 
     public FirebaseEntity(String messageId, String to, String messageType) {
+        this.messageId=messageId;
+        this.to=to;
+
     }
 }

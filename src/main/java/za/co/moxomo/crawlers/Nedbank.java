@@ -46,7 +46,7 @@ public class Nedbank {
 
     @Scheduled(fixedDelay = 900000, initialDelay =900000)
     public void crawl() {
-        logger.info("Nedbank crawl started at {} ", LocalDateTime.now());
+        logger.debug("Nedbank crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
 
         final HashSet<String> crawledUrls = new HashSet<>();
@@ -67,7 +67,7 @@ public class Nedbank {
             }
             crawledUrls.add(url);
             if (Objects.nonNull(url)) {
-                logger.info("Crawling Nedbank {}", url);
+                logger.debug("Crawling Nedbank {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -102,16 +102,16 @@ public class Nedbank {
                         if (url.contains("/job/")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
-                            logger.info("Nedbank vacancy exist {}",vacancySearchService.isExists(vacancy));
+                            logger.debug("Nedbank vacancy exist {}",vacancySearchService.isExists(vacancy));
                            if (!vacancySearchService.isExists(vacancy)) {
                                 vacancySearchService.index(vacancy);
-                                logger.info("Saved vacancy item with id {}", vacancy.getId());
+                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
                            }
                         }
 
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                   // e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
                     continue;
                 }
@@ -127,7 +127,6 @@ public class Nedbank {
         Objects.requireNonNull(url);
         Objects.requireNonNull(doc);
         Vacancy vacancy;
-        logger.info("Creating");
         try {
             String jobTitle;
             String description = null;
@@ -147,31 +146,31 @@ public class Nedbank {
             
 
 
-            jobTitle = doc.getElementById("job-keyword").text()
+            jobTitle = doc.getElementById("job-title").text()
                     .trim();
-            logger.info("job keyword {}", jobTitle);
+            logger.debug("job title {}", jobTitle);
             location = doc.getElementsByClass("jobGeoLocation").first().text().trim();
-            logger.info("location {}", location);
+            logger.debug("location {}", location);
             description = doc.getElementsByClass("jobdescription").first().text().trim();
             description = StringUtils.substringBetween(description, "Job Purpose", ".").trim();
-            logger.info("description {}", description);
+            logger.debug("description {}", description);
             imageUrl = "https://rmkcdn.successfactors.com/dd82a348/1311423d-203f-422e-b24b-e.gif";
             date = doc.getElementById("job-date").text().replace("Date:", "").trim();
-            logger.info("date {}", date);
-            logger.info("formatted date {}", sdf.parse(date));
+            logger.debug("date {}", date);
+            logger.debug("formatted date {}", sdf.parse(date));
 
             Instant instant = sdf.parse(date).toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour()))
                     .plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));
             company = "Nedbank Limited";
 
             advertDate = Date.from(instant);
-            logger.info("advertDate {}", advertDate);
+            logger.debug("advertDate {}", advertDate);
             Pattern p = Pattern.compile("\\d+");
             Matcher m = p.matcher(url);
             while (m.find()) {
                 offerId = m.group();
             }
-            logger.info("offerid {}", offerId);
+            logger.debug("offerid {}", offerId);
 
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
@@ -179,6 +178,7 @@ public class Nedbank {
 
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
             throw new RuntimeException(e);
         }
         return vacancy;

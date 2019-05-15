@@ -101,7 +101,7 @@ public class FirstRand {
 
        if (!vacancySearchService.isExists(vacancy)) {
             String url = RMB_DETAIL_URL.concat(vacancy.getOfferId());
-            logger.info("Crawling FNB {}", url);
+            logger.debug("Crawling FNB {}", url);
             logger.debug("url {}", url);
             if (Objects.nonNull(url)) {
                 try {
@@ -125,7 +125,7 @@ public class FirstRand {
                         vacancy.setQualifications(qualifications);
                         qualifications = StringUtils.remove(qualifications, "experience and qualifications");
                         logger.debug("qualifications {}", qualifications);
-                        String title = doc.select("meta[name=twitter:keyword]").first()
+                        String title = doc.select("meta[name=twitter:title]").first()
                                 .attr("content").trim();
                         vacancy.setJobTitle(title);
                         String imageUrl = doc.select("meta[name=twitter:image]").first()
@@ -133,7 +133,7 @@ public class FirstRand {
                         vacancy.setImageUrl(imageUrl);
                         vacancy.setUrl(url);
 
-                        logger.debug("keyword {}", title);
+                        logger.debug("title {}", title);
                         logger.debug("imageUrl {}", imageUrl);
                         Element additionalElem = doc.getElementsByClass("detail-block").last();
                         StringBuilder builder = new StringBuilder();
@@ -145,7 +145,7 @@ public class FirstRand {
                         vacancy.setCompany("FirstRand");
                         vacancy.setResponsibilities(responsibilities);
 
-                        logger.debug("responsibilities {}", builder.toString());
+                        logger.info("responsibilities {}", builder.toString());
 
                         vacancySearchService.index(vacancy);
                     }

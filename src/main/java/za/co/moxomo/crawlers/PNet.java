@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.services.VacancySearchService;
+import za.co.moxomo.utils.Util;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -41,14 +42,15 @@ public class PNet {
         this.vacancySearchService = vacancySearchService;
     }
 
-    @Scheduled(fixedDelay = 900000, initialDelay = 600000)
+   // @Scheduled(fixedDelay = 900000, initialDelay = 600000)
+    @Scheduled(fixedDelay = 900000, initialDelay = 0)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
         final HashSet<String> crawledUrls = new HashSet<>();
         final ConcurrentLinkedQueue<String> urlsToCrawl = new ConcurrentLinkedQueue<>();
 
-        for (int i = 0; i <= 400; i += 25) {
+        for (int i = 0; i <= 400; i += 20) {
             String url = (i == 0) ? "https://www.pnet.co.za/5/job-search-detailed.html?&ag=age_1" : "https://www.pnet.co.za/5/job-search-detailed.html?ag=age_1&of=".concat(String.valueOf(i)).concat("&an=paging_next");
             urlsToCrawl.add(url);
 
@@ -59,7 +61,7 @@ public class PNet {
             if (crawledUrls.contains(url)) {
                 continue;
             }
-            crawledUrls.add(url);
+
             if (Objects.nonNull(url)) {
                 logger.info("Crawling Pnet {}", url);
                 try {
@@ -69,6 +71,7 @@ public class PNet {
                             .userAgent(
                                     "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
                             .timeout(60000).execute();
+                    crawledUrls.add(url);
 
                     Document doc = response.parse();
                     if (Objects.nonNull(doc)) {
@@ -83,7 +86,6 @@ public class PNet {
                                 _link = _link.substring(0, index);
                             }
                             if (urlsToCrawl.contains(_link) || crawledUrls.contains(_link)) {
-                                logger.debug("Contains crawled url {}", _link);
                                 continue;
                             }
                             // urls that contain add info
@@ -96,12 +98,25 @@ public class PNet {
                         if (url.contains("jobs--") && url.contains("inline")) {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
+                            String location = Util.getApproximateLocation(vacancy.getLocation());
+                            logger.info("is valid vacancy {},  {}, location {}",vacancy, Util.validate(vacancy), location);
+                            logger.info("Vacancy exists {}",vacancySearchService.isExists(vacancy) );
                             if (!vacancySearchService.isExists(vacancy)) {
+                                logger.info("Saving pnet job {}",vacancy.toString());
                                 if (vacancy.getCompany().contains("Communicate")) {
                                     continue;
                                 }
                                 vacancySearchService.index(vacancy);
-                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
+                                logger.info("Saved vacancy item with id {}", vacancy.getId());
+                            }else{
+                                Vacancy existing = vacancySearchService.getByCompanyAndOfferId(vacancy);
+                                logger.info("Existing vacancy {}", existing.toString());
+                                if(!existing.getJobTitle().equalsIgnoreCase(vacancy.getJobTitle())){
+                                    logger.info("Existing vacancy title different to new");
+                                    vacancySearchService.delete(existing);
+                                    vacancySearchService.index(vacancy);
+                                    logger.info("Done replacing old vacancy with new");
+                                }
                             }
 
                         }
@@ -124,7 +139,7 @@ public class PNet {
         Objects.requireNonNull(url);
         Objects.requireNonNull(doc);
         Vacancy vacancy;
-        logger.info("Creating");
+
         try {
             String jobTitle;
             String description;
@@ -147,17 +162,17 @@ public class PNet {
             jobTitle = doc.getElementsByClass("listingTitle").text()
                     .trim();
 
-            logger.debug("position dd: {}", jobTitle);
+            logger.info("position dd: {}", jobTitle);
             for (Element element : doc.getElementsByClass("listing__apply-now_bottom")) {
                 offerId = element.select("a").first().attr("data-offerid");
-                logger.debug("offerid {}", offerId);
+                logger.info("offerid {}", offerId);
             }
             if (Objects.nonNull(doc.getElementById("company-intro"))) {
                 description = doc.getElementById("company-intro").text().trim();
             } else {
                 description = jobTitle;
             }
-            logger.debug("desc {}", description);
+            logger.info("desc {}", description);
             StringBuilder builder = new StringBuilder();
             if (Objects.nonNull(doc.getElementById("job-tasks"))) {
                 for (Element responsibility : doc.getElementById("job-tasks").getAllElements()) {
@@ -165,7 +180,7 @@ public class PNet {
                 }
                 responsibilities = builder.toString();
                 builder.setLength(0);
-                logger.debug("responsibilities {}", responsibilities);
+                logger.info("responsibilities {}", responsibilities);
             }
 
             if (Objects.nonNull(doc.getElementById("job-requim"))) {
@@ -173,7 +188,7 @@ public class PNet {
                     builder.append(qualification.text().trim()).append(System.getProperty("line.separator"));
                 }
                 qualifications = builder.toString();
-                logger.debug("qualification {}", qualifications);
+                logger.info("qualification {}", qualifications);
                 builder.setLength(0);
             }
             Elements companyInfo = doc.getElementsByClass("js-company-content-card");
@@ -187,8 +202,8 @@ public class PNet {
             }
             if (Objects.isNull(company)) {
                 Elements elements = doc.getElementsByClass("at-listing-nav-company-name-link");
-                if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("keyword")) {
-                    company = elements.first().attr("keyword");
+                if (Objects.nonNull(elements) && elements.size() > 0 && elements.first().hasAttr("title")) {
+                    company = elements.first().attr("title");
                 }
 
             }
@@ -227,7 +242,7 @@ public class PNet {
                 }
                 if (element.className().equals("listing-list at-listing__list-icons_date")) {
                     date = element.getAllElements().last().attr("data-date");
-                    logger.debug("date {}", date);
+                    logger.info("date {}", date);
                     try {
                         advertDate = sdf.parse(date);
                     }catch (Exception e){
@@ -243,8 +258,8 @@ public class PNet {
                 additionalTokens = builder.toString();
             }
             if (Objects.isNull(jobTitle) || jobTitle.isEmpty()) {
-                logger.info("Else {}", url);
-                jobTitle = doc.getElementsByClass("listing__job-keyword").first().text();
+
+                jobTitle = doc.getElementsByClass("listing__job-title").first().text();
                 company = doc.getElementsByClass("at-listing-nav-company-name-link").first().text();
                 location = doc.getElementsByClass("listing-list at-listing__list-icons_location").first().text();
                 date = doc.getElementsByClass("date-time-ago").first().attr("data-date");

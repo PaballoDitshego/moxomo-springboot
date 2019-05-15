@@ -60,7 +60,7 @@ public class CareerJunction {
             }
             crawledUrls.add(url);
             if (Objects.nonNull(url)) {
-                logger.info("Crawling CareerJunction {}", url);
+                logger.debug("Crawling CareerJunction {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -107,7 +107,7 @@ public class CareerJunction {
 
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                  //  e.printStackTrace();
                     logger.error("Error {} encountered while crawling {}", e.getMessage(), url);
                     continue;
                 }
@@ -141,7 +141,7 @@ public class CareerJunction {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
 
-            jobTitle = StringUtils.substringBefore(doc.select("meta[property=og:keyword]").first()
+            jobTitle = StringUtils.substringBefore(doc.select("meta[property=og:title]").first()
                     .attr("content").trim(), " at ");
             imageUrl = doc.select("meta[property=og:image]").first()
                     .attr("content").trim();
@@ -163,6 +163,7 @@ public class CareerJunction {
 
 
         } catch (Exception e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
             throw new RuntimeException(e);
         }

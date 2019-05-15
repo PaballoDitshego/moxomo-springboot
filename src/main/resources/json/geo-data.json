@@ -11224,6 +11224,14 @@
     "ProvinceID": 2
   },
   {
+    "City": "umhlanga",
+    "AccentCity": "Umhlanga",
+    "ProvinceName": "KwaZulu Natal",
+    "Latitude": -29.716667,
+    "Longitude": 31.066667,
+    "ProvinceID": 2
+  },
+  {
     "City": "umhlatuzi valley",
     "AccentCity": "Umhlatuzi Valley",
     "ProvinceName": "KwaZulu Natal",
@@ -11370,6 +11378,14 @@
   {
     "City": "umtata",
     "AccentCity": "Umtata",
+    "ProvinceName": "Eastern Cape",
+    "Latitude": -31.588926,
+    "Longitude": 28.784431,
+    "ProvinceID": 5
+  },
+  {
+    "City": "mthatha",
+    "AccentCity": "Mthatha",
     "ProvinceName": "Eastern Cape",
     "Latitude": -31.588926,
     "Longitude": 28.784431,
@@ -13038,14 +13054,6 @@
     "Latitude": -26.086947,
     "Longitude": 25.910374,
     "ProvinceID": 10
-  },
-  {
-    "City": "vereeniging",
-    "AccentCity": "Vereeniging",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.533333,
-    "Longitude": 26.2,
-    "ProvinceID": 5
   },
   {
     "City": "vereeniging",
@@ -21287,13 +21295,60 @@
     "Longitude": 28.259068,
     "ProvinceID": 6
   },
-
   {
     "City": "gauteng",
     "AccentCity": "Gauteng",
     "ProvinceName": "Gauteng",
     "Latitude": -26.270760,
     "Longitude": 28.112268,
+    "ProvinceID": 6
+  },
+  {
+    "City": "kya sands",
+    "AccentCity": "Kya Sands",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0246259,
+    "Longitude": 27.9314572,
+    "ProvinceID": 6
+  },
+  {
+    "City": "kya sand",
+    "AccentCity": "Kya Sand",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0246259,
+    "Longitude": 27.9314572,
+    "ProvinceID": 6
+  },
+  {
+    "City": "linbro park",
+    "AccentCity": "Linbro Park",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0908802,
+    "Longitude": 28.1077758,
+    "ProvinceID": 6
+  },
+  {
+    "City": "linbro",
+    "AccentCity": "Linbro",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0908802,
+    "Longitude": 28.1077758,
+    "ProvinceID": 6
+  },
+  {
+    "City": "greenstone",
+    "AccentCity": "Greenstone",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1165207,
+    "Longitude": 28.1478617,
+    "ProvinceID": 6
+  },
+  {
+    "City": "greenstone hill",
+    "AccentCity": "Greenstone Hill",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1165207,
+    "Longitude": 28.1478617,
     "ProvinceID": 6
   },
   {
@@ -21310,6 +21365,14 @@
     "ProvinceName": "Western Cape",
     "Latitude": -38.4351689,
     "Longitude": 18.9955463,
+    "ProvinceID": 11
+  },
+  {
+    "City": "cape agulhas",
+    "AccentCity": "Cape Agulhas",
+    "ProvinceName": "Western Cape",
+    "Latitude": -34.8161234,
+    "Longitude": 19.9712024,
     "ProvinceID": 11
   },
   {
@@ -23897,14 +23960,6 @@
     "ProvinceID": 6
   },
   {
-    "City": "wynberg",
-    "AccentCity": "Wynberg",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.983333,
-    "Longitude": 18.4,
-    "ProvinceID": 11
-  },
-  {
     "City": "wyndover",
     "AccentCity": "Wyndover",
     "ProvinceName": "Western Cape",
@@ -24777,6 +24832,22 @@
     "ProvinceID": 2
   },
   {
+    "City": "north coast",
+    "AccentCity": "North Coast",
+    "ProvinceName": "KwaZulu Natal",
+    "Latitude": -29.4874396,
+    "Longitude": 31.1613191,
+    "ProvinceID": 2
+  },
+  {
+    "City": "kwazulu-natal",
+    "AccentCity": "KwaZulu-Natal",
+    "ProvinceName": "KwaZulu Natal",
+    "Latitude": -28.9262824,
+    "Longitude": 28.6383308,
+    "ProvinceID": 2
+  },
+  {
     "City": "oslo beach",
     "AccentCity": "Oslo Beach",
     "ProvinceName": "KwaZulu Natal",
@@ -25129,6 +25200,14 @@
     "ProvinceID": 11
   },
   {
+    "City": "overberg",
+    "AccentCity": "Overberg",
+    "ProvinceName": "Western Cape",
+    "Latitude": -34.5203424,
+    "Longitude": 19.0193738,
+    "ProvinceID": 11
+  },
+  {
     "City": "outeniqua",
     "AccentCity": "Outeniqua",
     "ProvinceName": "Western Cape",
@@ -25185,12 +25264,28 @@
     "ProvinceID": 2
   },
   {
+    "City": "hibiscus coast",
+    "AccentCity": "Hibiscus Coast",
+    "ProvinceName": "KwaZulu Natal",
+    "Latitude": -30.811079,
+    "Longitude": 30.0721605,
+    "ProvinceID": 2
+  },
+  {
     "City": "overschot",
     "AccentCity": "Overschot",
     "ProvinceName": "Free State",
     "Latitude": -30.303728,
     "Longitude": 26.415659,
     "ProvinceID": 3
+  },
+  {
+    "City": "south africa",
+    "AccentCity": "South Africa",
+    "ProvinceName": "South Africa",
+    "Latitude": -28.4793,
+    "Longitude": 24.6727,
+    "ProvinceID": 100
   },
   {
     "City": "overskat",
@@ -34147,17 +34242,17 @@
   {
     "City": "pretoria",
     "AccentCity": "Pretoria",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -30.783403,
-    "Longitude": 28.594688,
-    "ProvinceID": 5
-  },
-  {
-    "City": "pretoria",
-    "AccentCity": "Pretoria",
     "ProvinceName": "Gauteng",
     "Latitude": -25.706944,
     "Longitude": 28.229444,
+    "ProvinceID": 6
+  },
+  {
+    "City": "menlyn",
+    "AccentCity": "Menlyn",
+    "ProvinceName": "Gauteng",
+    "Latitude": -25.7825577,
+    "Longitude": 28.2697967,
     "ProvinceID": 6
   },
   {
@@ -42115,6 +42210,22 @@
   {
     "City": "cape town",
     "AccentCity": "Cape Town",
+    "ProvinceName": "Western Cape",
+    "Latitude": -33.925839,
+    "Longitude": 18.423218,
+    "ProvinceID": 11
+  },
+  {
+    "City": "Killarney Gardens",
+    "AccentCity": "Killarney Gardens",
+    "ProvinceName": "Western Cape",
+    "Latitude": -33.8269287,
+    "Longitude": 18.5239041,
+    "ProvinceID": 11
+  },
+  {
+    "City": "tygervalley",
+    "AccentCity": "TygerValley",
     "ProvinceName": "Western Cape",
     "Latitude": -33.925839,
     "Longitude": 18.423218,
@@ -53227,6 +53338,14 @@
   {
     "City": "mafikeng",
     "AccentCity": "Mafikeng",
+    "ProvinceName": "North West",
+    "Latitude": -25.86522,
+    "Longitude": 25.644213,
+    "ProvinceID": 10
+  },
+  {
+    "City": "mahikeng",
+    "AccentCity": "Mahikeng",
     "ProvinceName": "North West",
     "Latitude": -25.86522,
     "Longitude": 25.644213,
@@ -64809,6 +64928,22 @@
     "ProvinceID": 6
   },
   {
+    "City": "johannesburg northern surbubs",
+    "AccentCity": "Johannesburg Northern Surbubs",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0369693,
+    "Longitude": 27.9596824,
+    "ProvinceID": 6
+  },
+  {
+    "City": "killarney",
+    "AccentCity": "Killarney",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.168639,
+    "Longitude": 28.0476091,
+    "ProvinceID": 6
+  },
+  {
     "City": "johnniesdale",
     "AccentCity": "Johnniesdale",
     "ProvinceName": "Northern Cape",
@@ -66769,6 +66904,22 @@
     "ProvinceID": 6
   },
   {
+    "City": "o.r tambo international airport",
+    "AccentCity": "O.R Tambo Internation Airport",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.098762,
+    "Longitude": 28.233013,
+    "ProvinceID": 6
+  },
+  {
+    "City": "bonaero park",
+    "AccentCity": "Bonaero Park",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.098762,
+    "Longitude": 28.233013,
+    "ProvinceID": 6
+  },
+  {
     "City": "kenardt",
     "AccentCity": "Kenardt",
     "ProvinceName": "Northern Cape",
@@ -67670,6 +67821,30 @@
     "ProvinceName": "Gauteng",
     "Latitude": -26.256016,
     "Longitude": 27.560676,
+    "ProvinceID": 6
+  },
+  {
+    "City": "west rand",
+    "AccentCity": "West Rand",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.221603,
+    "Longitude": 26.9881303,
+    "ProvinceID": 6
+  },
+  {
+    "City": "vaal",
+    "AccentCity": "Vaal",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.4253246,
+    "Longitude": 27.7385325,
+    "ProvinceID": 6
+  },
+  {
+    "City": "east rand",
+    "AccentCity": "East Rand",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1842186,
+    "Longitude": 28.0161887,
     "ProvinceID": 6
   },
   {
@@ -69438,14 +69613,6 @@
     "ProvinceName": "Limpopo",
     "Latitude": -25.198611,
     "Longitude": 28.609167,
-    "ProvinceID": 9
-  },
-  {
-    "City": "rustenburg",
-    "AccentCity": "Rustenburg",
-    "ProvinceName": "Limpopo",
-    "Latitude": -24.933333,
-    "Longitude": 27.15,
     "ProvinceID": 9
   },
   {
@@ -75939,14 +76106,6 @@
   {
     "City": "middelberg",
     "AccentCity": "Middelberg",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.334714,
-    "Longitude": 26.773396,
-    "ProvinceID": 5
-  },
-  {
-    "City": "middelberg",
-    "AccentCity": "Middelberg",
     "ProvinceName": "Mpumalanga",
     "Latitude": -25.775071,
     "Longitude": 29.464821,
@@ -81007,14 +81166,6 @@
     "Latitude": -32.228069,
     "Longitude": 28.206565,
     "ProvinceID": 5
-  },
-  {
-    "City": "mpumalanga",
-    "AccentCity": "Mpumalanga",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -27.881765,
-    "Longitude": 31.534017,
-    "ProvinceID": 2
   },
   {
     "City": "mpumaze",
@@ -92363,14 +92514,6 @@
   {
     "City": "edenvale",
     "AccentCity": "Edenvale",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -30.379027,
-    "Longitude": 28.923484,
-    "ProvinceID": 2
-  },
-  {
-    "City": "edenvale",
-    "AccentCity": "Edenvale",
     "ProvinceName": "Gauteng",
     "Latitude": -26.139224,
     "Longitude": 28.165755,
@@ -95878,6 +96021,30 @@
     "ProvinceName": "Gauteng",
     "Latitude": -25.764167,
     "Longitude": 28.612222,
+    "ProvinceID": 6
+  },
+  {
+    "City": "ormonde",
+    "AccentCity": "Ormonde",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.2466964,
+    "Longitude": 27.9834728,
+    "ProvinceID": 6
+  },
+  {
+  "City": "denver",
+  "AccentCity": "Denver",
+  "ProvinceName": "Gauteng",
+  "Latitude": -26.2095644,
+  "Longitude": 28.0805293,
+  "ProvinceID": 6
+},
+  {
+    "City": "weltevreden park",
+    "AccentCity": "Weltevreden Park",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1277509,
+    "Longitude": 27.9137409,
     "ProvinceID": 6
   },
   {

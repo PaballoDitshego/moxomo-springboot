@@ -13,6 +13,7 @@ import za.co.moxomo.config.xmpp.FirebaseUpstreamMessage;
 
 @Component
 @Slf4j
+
 public class InboundFcmMessageHandler {
 
 
@@ -51,12 +52,12 @@ public class InboundFcmMessageHandler {
     private void handleAcknowledgementReceipt(FirebaseUpstreamMessage input) {
         String messageId = input.getMessageUid();
         String data = String.valueOf(input.getData());
-        log.debug("Gcm acknowledges receipt of message {}, with payload {}", messageId, data);
+        log.info("Gcm acknowledges receipt of message {}, with payload {}", messageId, data);
 
     }
 
     private void handleOrdinaryMessage(FirebaseUpstreamMessage input) {
-        log.debug("Ordinary message received");
+        log.info("Ordinary message received");
         String messageId = input.getMessageUid();
         String from = input.getFrom();
 
@@ -93,14 +94,14 @@ public class InboundFcmMessageHandler {
 
     private void handleDeliveryReceipts(FirebaseUpstreamMessage input) {
         String messageId = String.valueOf(input.getData().get(ORIGINAL_MESSAGE_ID));
-        log.debug("Message " + messageId + " delivery successful, updating notification to delivered status.");
+        log.info("Message " + messageId + " delivery successful, updating notification to delivered status.");
        // notificationService.markNotificationAsDelivered(messageId);
     }
 
 
     private void sendAcknowledment(String registrationId, String messageId) {
         org.springframework.messaging.Message<Message> gcmMessage = FirebaseXmppMessageCodec.encode(registrationId, messageId, "ack");
-        log.debug("Acknowledging message with id ={}", messageId);
+        log.info("Acknowledging message with id ={}", messageId);
         fcmXmppOutboundChannel.send(gcmMessage);
     }
 

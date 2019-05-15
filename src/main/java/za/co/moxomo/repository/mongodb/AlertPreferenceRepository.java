@@ -9,8 +9,7 @@ public interface AlertPreferenceRepository extends MongoRepository<AlertPreferen
 
     List<AlertPreference> findAlertPreferenceByMobileNumber(String mobileNumber);
     List<AlertPreference> findAlertPreferenceByGcmToken(String gcmToken);
-   // AlertPreference findByAlertById(String Id);
-
+    AlertPreference findAlertPreferenceById(String Id);
 
 
 }

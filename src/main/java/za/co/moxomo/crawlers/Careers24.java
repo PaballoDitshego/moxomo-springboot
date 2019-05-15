@@ -137,15 +137,15 @@ public class Careers24 {
             Date advertDate;
             SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
 
-            jobTitle = doc.select("meta[property=og:keyword]").first()
+            jobTitle = doc.select("meta[property=og:title]").first()
                     .attr("content").trim();
-            logger.debug("jobtitle {}", jobTitle);
+            logger.info("jobtitle {}", jobTitle);
             imageUrl = doc.select("meta[property=og:image]").first()
                     .attr("content").concat(".jpeg").trim();
-            logger.debug("imageUrl {}", imageUrl);
+            logger.info("imageUrl {}", imageUrl);
             description = doc.select("meta[property=og:description]").first()
                     .attr("content").trim();
-            logger.debug("description {}", description);
+          //  logger.debug("description {}", description);
             String postedBy = doc.select("span.posted").first().text();
             company = StringUtils.substringBetween(postedBy, "Posted by ", "on").trim();
             logger.debug("Company {}", company);
@@ -172,6 +172,7 @@ public class Careers24 {
                     contractType, (Objects.nonNull(imageUrl) && !imageUrl.isEmpty()) ? imageUrl : "https://dash.mediaupdate.co.za/story/image/110396/110396.jpg", remuneration, "PNET", additionalTokens, affirmativeAction, url);
 
         } catch (Exception e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
 
         }

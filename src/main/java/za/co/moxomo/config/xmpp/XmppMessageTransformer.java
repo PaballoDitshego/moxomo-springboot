@@ -45,7 +45,7 @@ public class XmppMessageTransformer {
         String registrationID = notification.getGcmToken();
         String messageId = notification.getId();
 
-        log.info("Attempting to transform message for registration ID {}, with message id {}", messageId, registrationID);
+        log.info("Attempting to transform message for registration ID {}, with message id {}", registrationID, messageId);
         String collapseKey = generateCollapseKey(notification);
         log.info("Generated collapseKey " + collapseKey);
         Map<String, Object> dataPart = createDataPart(notification);
@@ -56,7 +56,8 @@ public class XmppMessageTransformer {
         switch (notification.getAlertType()) {
             case JOB_ALERT:
                 title = notification.getTitle();
-                body = notification.getTitle();
+                body = notification.getDescription();
+
 
                 break;
 
@@ -70,10 +71,11 @@ public class XmppMessageTransformer {
     private String generateCollapseKey(Notification notification) {
         StringBuilder sb = new StringBuilder();
         switch (notification.getAlertType()) {
-
+            case JOB_ALERT:
+                return "fsfsfsfsfs";
 
             default:
-                return null;
+                return "fsfsss";
         }
     }
 
@@ -90,6 +92,20 @@ public class XmppMessageTransformer {
                 null,
                 notification.getPriority());
         
+    }
+
+    private Map<String, Object> createNotificationPart(Notification notification) {
+        return FirebaseXmppMessageCodec.createDataPart(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getDescription(),
+                notification.getEntityId(),
+                notification.getCreatedDateTime(),
+                notification.getAlertType(),
+                null,
+                null,
+                notification.getPriority());
+
     }
 
 

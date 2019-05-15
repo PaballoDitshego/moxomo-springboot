@@ -33,6 +33,7 @@ public class Notification {
 	private String gcmToken;
 	private String mobileNumber;
 	private String alertType;
+	private boolean sms;
 
 	private String actionType;
 

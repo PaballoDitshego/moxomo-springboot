@@ -67,18 +67,18 @@ public class Absa {
                     .method(Connection.Method.POST);
             ObjectMapper mapper = new ObjectMapper();
             AbsaResponse response = mapper.readValue(connection.execute().body(), AbsaResponse.class);
-            logger.info("Absa Response {}", response.toString());
+            logger.debug("Absa Response {}", response.toString());
             for (RequisitionList requisitionList : response.getRequisitionList()) {
                 String jobId = requisitionList.getJobId();
                 String url = jobUrl.concat(jobId).concat("&tz=GMT%2B02%3A00");
                 logger.debug("Url {}", url);
                 String jobTitle = requisitionList.getColumn().get(0);
-                logger.debug("job keyword  {}", jobTitle);
+                logger.debug("job title  {}", jobTitle);
                 String date = requisitionList.getColumn().get(2);
                 Date advertDate = sdf.parse(date);
                 Instant instant = advertDate.toInstant().plus(Duration.ofHours(LocalDateTime.now().getHour())).plus(Duration.ofMinutes(LocalDateTime.now().getMinute()));
 
-                logger.info("AdvertDate {}", Date.from(instant));
+                logger.debug("AdvertDate {}", Date.from(instant));
                 String location = requisitionList.getColumn().get(1).replaceAll("\\W\\W", "").trim();
                 logger.debug("Location {}", location);
 

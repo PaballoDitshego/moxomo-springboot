@@ -1,22 +1,22 @@
 package za.co.moxomo.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ToString
+@Data
+@EqualsAndHashCode(callSuper=false)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AlertDTO {
     private String alertId;
     private String location;
-    private String tags;
     private boolean sms;
     private boolean push;
-    private String title;
+    private String keyword;
     private String mobileNumber;
     private String gcmToken;
+
 
 }

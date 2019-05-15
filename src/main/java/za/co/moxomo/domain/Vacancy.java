@@ -1,19 +1,18 @@
 package za.co.moxomo.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.Data;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 import java.util.Date;
 import java.util.UUID;
 
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
-
-import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 
 @Setter
@@ -61,7 +60,6 @@ public class Vacancy {
     private Date closingDate;
     private boolean webViewViewable = true;
     @GeoPointField
-    @JsonIgnore
     @ApiModelProperty(hidden=true)
     private GeoPoint geoPoint;
 

@@ -12,6 +12,8 @@ public interface VacancySearchService {
 
     Vacancy index(Vacancy vacancy) throws Exception;
 
+    Vacancy getByCompanyAndOfferId(Vacancy vacancy);
+
     Vacancy getVacancy(String id);
 
     boolean isExists(Vacancy vacancy);
@@ -19,6 +21,8 @@ public interface VacancySearchService {
     SearchResults search(String searchString, int offset, int limit);
 
     void deleteOldVacancies();
+
+    void delete(Vacancy vacancy);
 
     AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException;
 

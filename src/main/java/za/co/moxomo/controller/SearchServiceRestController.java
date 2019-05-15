@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.dto.wrapper.ResponseWrapper;
-import za.co.moxomo.services.GeoLocationService;
+import za.co.moxomo.services.GeoService;
 import za.co.moxomo.services.VacancySearchService;
 
 import java.util.List;
@@ -24,13 +24,13 @@ public class SearchServiceRestController {
 
     private TaskExecutor asyncExecutor;
     private VacancySearchService vacancySearchService;
-    private GeoLocationService geoLocationService;
+    private GeoService geoService;
 
     @Autowired
-    public SearchServiceRestController(TaskExecutor asyncExecutor, VacancySearchService vacancySearchService, GeoLocationService  geoLocationService) {
+    public SearchServiceRestController(TaskExecutor asyncExecutor, VacancySearchService vacancySearchService, GeoService geoService) {
         this.asyncExecutor = asyncExecutor;
         this.vacancySearchService = vacancySearchService;
-        this.geoLocationService=geoLocationService;
+        this.geoService = geoService;
     }
 
     @GetMapping(value = "/vacancies")
@@ -92,7 +92,7 @@ public class SearchServiceRestController {
         CompletableFuture.supplyAsync(() -> {
             List<String> response;
             try {
-                response = geoLocationService.getLocationsSuggestions(location);
+                response = geoService.getLocationsSuggestions(location);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);

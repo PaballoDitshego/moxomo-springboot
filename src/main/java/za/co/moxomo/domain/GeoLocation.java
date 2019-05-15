@@ -14,6 +14,8 @@ import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Objects;
+
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -28,6 +30,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Getter
 @Document
 @NoArgsConstructor
+
 public class GeoLocation {
 
     @Id
@@ -62,5 +65,23 @@ public class GeoLocation {
         point[0]= latitude;
         point[1]= longitude;
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GeoLocation that = (GeoLocation) o;
+        return Objects.equals(city, that.city) &&
+                Objects.equals(accentCity, that.accentCity) &&
+                Objects.equals(provinceName, that.provinceName) &&
+                Objects.equals(latitude, that.latitude) &&
+                Objects.equals(longitude, that.longitude) &&
+                Objects.equals(provinceID, that.provinceID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(city, accentCity, provinceName, latitude, longitude, provinceID);
     }
 }

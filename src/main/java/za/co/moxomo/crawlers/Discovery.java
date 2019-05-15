@@ -65,7 +65,7 @@ public class Discovery {
         ResponseEntity<List<DiscoveryResponse>> responseEntity = restTemplate.exchange(ENDPOINT, HttpMethod.POST,
                 request, new ParameterizedTypeReference<List<DiscoveryResponse>>() {
                 });
-        logger.info("DiscoveryResponse {}", responseEntity.getBody().toString());
+        logger.debug("DiscoveryResponse {}", responseEntity.getBody().toString());
         List<DiscoveryResponse> response = responseEntity.getBody();
         for (DiscoveryResponse discoveryResponse : response) {
             try {
@@ -81,8 +81,6 @@ public class Discovery {
         long executeTime = endTime - startTime;
 
         logger.info("Discovery crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
-
-
     }
 
     private void createVacancy(DiscoveryResponse discoveryResponse) throws Exception {
@@ -99,11 +97,11 @@ public class Discovery {
         vacancy.setUrl(discoveryResponse.getApplicationUrl());
         vacancy.setJobTitle(position);
         vacancy.setLocation(location);
-        vacancy.setCompany("Discovery");
+        vacancy.setCompany("Discovery Limited v");
         vacancy.setImageUrl(imageUrl);
         setAdditionalData(vacancy);
 
-        logger.info("vacancy {}", vacancy.toString());
+        logger.debug("vacancy {}", vacancy.toString());
         Util.validate(vacancy);
 
 
@@ -114,7 +112,7 @@ public class Discovery {
 
     private void setAdditionalData(Vacancy vacancy) throws IOException, DecoderException, ParseException {
         Objects.requireNonNull(vacancy);
-        logger.info(vacancy.getUrl());
+        logger.debug(vacancy.getUrl());
 
         Connection.Response response = Jsoup
                 .connect(vacancy.getUrl())
