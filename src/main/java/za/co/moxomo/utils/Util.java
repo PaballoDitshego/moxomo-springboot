@@ -43,8 +43,17 @@ public class Util {
     public static Notification generateNotification(Vacancy vacancy, AlertPreference alertPreference) {
         Notification notification = Notification.builder().id(UUID.randomUUID().toString())
                 .description(vacancy.getDescription())
-                .createdDateTime(Instant.now()).advertDate(vacancy.getAdvertDate()).url(vacancy.getUrl()).gcmToken(alertPreference.getGcmToken()).alertType(AlertType.JOB_ALERT.name())
-                .imageUrl(vacancy.getImageUrl()).entityId(vacancy.getId()).entityType(Vacancy.class.getTypeName()).mobileNumber(alertPreference.getMobileNumber()).sms(alertPreference.isSmsAlert())
+                .createdDateTime(Instant.now()).
+                        advertDate(vacancy.getAdvertDate())
+                .url(vacancy.getUrl())
+                .gcmToken(alertPreference.getGcmToken())
+                .alertType(AlertType.JOB_ALERT.name())
+                .imageUrl(vacancy.getImageUrl())
+                .entityId(vacancy.getId())
+                .title(vacancy.getJobTitle())
+                .entityType(Vacancy.class.getTypeName())
+                .mobileNumber(alertPreference.getMobileNumber())
+                .sms(alertPreference.isSmsAlert())
                 .location(vacancy.getLocation()).route((alertPreference.isPushAlert()) ?
                         AlertRoute.FCM.getRoute() : AlertRoute.SMS.getRoute()).build();
 

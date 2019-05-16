@@ -243,9 +243,9 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.KEYWORD.getFieldName(), preference.getCriteria().getKeyword()).operator(Operator.AND).lenient(true));
         boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.COMPANY.getFieldName(), preference.getCriteria().getKeyword()).lenient(true));
-        if (preference.getCriteria().getLocation() != null) {
+       /* if (preference.getCriteria().getLocation() != null) {
             boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.LOCATION.getFieldName(), preference.getCriteria().getLocation()).lenient(true));
-        }
+        }*/
         if (preference.getCriteria().getPoint() != null) {
             double[] point = preference.getCriteria().getPoint();
             boolQueryBuilder.filter(QueryBuilders.geoDistanceQuery(PercolatorIndexFields.GEOPOINT.getFieldName()).point(new GeoPoint(point[0], point[1])).distance(50, DistanceUnit.KILOMETERS));
@@ -260,16 +260,13 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
         docBuilder.field(PercolatorIndexFields.KEYWORD.getFieldName(), vacancy.getJobTitle());
         docBuilder.field(PercolatorIndexFields.COMPANY.getFieldName(), vacancy.getCompany());
-        docBuilder.field(PercolatorIndexFields.LOCATION.getFieldName(), vacancy.getLocation());
+      //  docBuilder.field(PercolatorIndexFields.LOCATION.getFieldName(), vacancy.getLocation());
         docBuilder.startObject(PercolatorIndexFields.GEOPOINT.getFieldName())
                 .field("lat", vacancy.getGeoPoint().getLat()).field("lon", vacancy.getGeoPoint().getLon());
         docBuilder.endObject();
-
         docBuilder.endObject();
         logger.info("Percolator query {}", BytesReference.bytes(docBuilder).utf8ToString());
 
-       /* return new PercolateQueryBuilder(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(),
-                BytesReference.bytes(docBuilder));*/
         return new PercolateQueryBuilder(PercolatorIndexFields.PERCOLATOR_QUERY.getFieldName(),
                 BytesReference.bytes(docBuilder),
                 XContentType.JSON);

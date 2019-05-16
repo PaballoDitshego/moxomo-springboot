@@ -41,8 +41,6 @@ public class AlertServiceRestController {
     private FcmTokenRepository fcmTokenRepository;
     private ModelMapper modelMapper;
     private GeoService geoService;
-    @Autowired
-    private NotificationSendingService notificationSendingService;
 
 
     @Autowired
@@ -63,8 +61,7 @@ public class AlertServiceRestController {
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AlertPreference> create(@Valid @RequestBody AlertDTO alertDTO) throws Exception {
-        log.info("Alert create requust {}", alertDTO.toString());
-
+        log.debug("Alert create request {}", alertDTO.toString());
         double geoPoint[] = new double[2];
         String[] locale = alertDTO.getLocation().split(",");
         if (locale.length > 1) {
@@ -83,7 +80,6 @@ public class AlertServiceRestController {
                 }
             }
         }
-
         AlertPreference preference = modelMapper.map(alertDTO, AlertPreference.class);
         preference.setId(UUID.randomUUID().toString());
         AlertPreference.Criteria criteria = AlertPreference.Criteria.builder()
@@ -96,7 +92,6 @@ public class AlertServiceRestController {
         preference.setCriteria(criteria);
         preference.setPushAlert(alertDTO.isPush());
         preference.setSmsAlert(alertDTO.isSms());
-
 
         log.debug("AlertPreference {}", preference);
         return ResponseEntity.ok(vacancySearchService.createSearchPreference(preference));
