@@ -22,7 +22,8 @@ public class SearchSuggestionKeyword {
     @JsonProperty("keyword")
     private String keyword;
 
-    public SearchSuggestionKeyword(String keyword) {
+    public SearchSuggestionKeyword(String id, String keyword) {
+        this.id=id;
         this.keyword = keyword;
     }
 }

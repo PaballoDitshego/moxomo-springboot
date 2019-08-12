@@ -1,6 +1,7 @@
 package za.co.moxomo.config.xmpp;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.ReconnectionListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.ReactiveCollectionCallback;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -60,14 +62,17 @@ public class XmppConfig {
     }
 
     @Bean(name = "fcmConnection")
-    public  XmppConnectionFactoryBean xmppConnectionFactoryBean() throws XmppStringprepException {
-        XmppConnectionFactoryBean connectionFactoryBean = new XmppConnectionFactoryBean();
+    public  AutoReconnectingXmppConnectionFactoryBean xmppConnectionFactoryBean() throws XmppStringprepException {
+        AutoReconnectingXmppConnectionFactoryBean connectionFactoryBean = new AutoReconnectingXmppConnectionFactoryBean();
+        connectionFactoryBean.setAutoStartup(true);
         connectionFactoryBean.setConnectionConfiguration(connectionConfiguration());
         connectionFactoryBean.setAutoStartup(true);
         Roster.setRosterLoadedAtLoginDefault(false);
         log.info("XMPP connection successfully started up");
         return connectionFactoryBean;
     }
+
+
 
     @Bean
     public FirebaseMessageListeningEndpoint inboundAdapter(XMPPConnection connection, MessageChannel fcmInboundChannel) {
@@ -83,6 +88,24 @@ public class XmppConfig {
         ChatMessageSendingMessageHandler adapter = new ChatMessageSendingMessageHandler(connection);
         return adapter;
     }
+
+    public ReconnectionListener getReconnectionListener(){
+        ReconnectionListener reconnectionListener = new ReconnectionListener() {
+            @Override
+            public void reconnectingIn(int seconds) {
+
+            }
+
+            @Override
+            public void reconnectionFailed(Exception e) {
+
+            }
+
+    };
+        return reconnectionListener;
+    }
+
+
 
 
 }

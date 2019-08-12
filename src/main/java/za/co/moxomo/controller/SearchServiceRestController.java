@@ -33,15 +33,27 @@ public class SearchServiceRestController {
         this.geoService = geoService;
     }
 
-    @GetMapping(value = "/vacancies")
+    @GetMapping(value = "/")
     @CrossOrigin
-    public DeferredResult<ResponseEntity<ResponseWrapper>> getVacancies(@RequestParam(required = false) String searchString, @RequestParam int offset, @RequestParam int limit) throws Exception {
+    public String ok() {
+
+        return "Okay";
+
+    }
+
+
+    @GetMapping(value = "rest/vacancies")
+    @CrossOrigin
+    public DeferredResult<ResponseEntity<ResponseWrapper>> getVacancies(@RequestParam(required = false) String searchString,
+                                                                        @RequestParam(required = false) double latitude,
+                                                                        @RequestParam(required = false) double longitude,
+                                                                        @RequestParam int offset, @RequestParam int limit) {
 
         DeferredResult<ResponseEntity<ResponseWrapper>> deferredResult = new DeferredResult<>();
         CompletableFuture.supplyAsync(() -> {
             ResponseWrapper response;
             try {
-                response = vacancySearchService.search(searchString,offset, limit);
+                response = vacancySearchService.search(searchString, latitude, longitude, offset, limit);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -58,7 +70,7 @@ public class SearchServiceRestController {
 
     }
 
-    @GetMapping(value = "/vacancies/{id}")
+    @GetMapping(value = "rest/vacancies/{id}")
     @CrossOrigin
     public DeferredResult<ResponseEntity<Vacancy>> getVacancy(@PathVariable("id") String id) throws Exception {
 
@@ -84,7 +96,7 @@ public class SearchServiceRestController {
     }
 
 
-    @GetMapping(value = "/locations")
+    @GetMapping(value = "rest/locations")
     @CrossOrigin
     public DeferredResult<ResponseEntity<List<String>>> getLocationSuggestions(@RequestParam String location) throws Exception {
 
@@ -109,7 +121,7 @@ public class SearchServiceRestController {
 
     }
 
-    @GetMapping(value = "/keywords")
+    @GetMapping(value = "rest/keywords")
     @CrossOrigin
     public DeferredResult<ResponseEntity<List<String>>> getTitleSuggestions(@RequestParam String term) throws Exception {
 

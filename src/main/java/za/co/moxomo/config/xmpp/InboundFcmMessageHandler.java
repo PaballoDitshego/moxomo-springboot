@@ -1,15 +1,11 @@
 package  za.co.moxomo.config.xmpp;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jivesoftware.smack.packet.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
-import za.co.moxomo.config.xmpp.FirebaseUpstreamMessage;
 
 @Component
 @Slf4j
@@ -19,6 +15,7 @@ public class InboundFcmMessageHandler {
 
     @Autowired
     private MessageChannel fcmXmppOutboundChannel;
+
 
 
 
@@ -41,6 +38,7 @@ public class InboundFcmMessageHandler {
                     handleDeliveryReceipts(message);
                     break;
                 case "control":
+                    handleControl(message);
                     break;
                 default:
                     break;
@@ -97,6 +95,12 @@ public class InboundFcmMessageHandler {
         log.info("Message " + messageId + " delivery successful, updating notification to delivered status.");
        // notificationService.markNotificationAsDelivered(messageId);
     }
+
+    private void handleControl(FirebaseUpstreamMessage input) {
+        log.info("FCM Connection draining");
+
+    }
+
 
 
     private void sendAcknowledment(String registrationId, String messageId) {

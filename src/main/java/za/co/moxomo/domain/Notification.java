@@ -34,6 +34,7 @@ public class Notification {
 	private String mobileNumber;
 	private String alertType;
 	private boolean sms;
+	private String alertTitle;
 
 	private String actionType;
 

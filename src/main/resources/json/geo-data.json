@@ -34144,6 +34144,14 @@
     "ProvinceID": 9
   },
   {
+    "City": "mokopane",
+    "AccentCity": "Mokopane",
+    "ProvinceName": "Limpopo",
+    "Latitude": -24.201369,
+    "Longitude": 28.986761,
+    "ProvinceID": 9
+  },
+  {
     "City": "potgietersrust",
     "AccentCity": "Potgietersrust",
     "ProvinceName": "Limpopo",
@@ -34245,6 +34253,14 @@
     "ProvinceName": "Gauteng",
     "Latitude": -25.706944,
     "Longitude": 28.229444,
+    "ProvinceID": 6
+  },
+  {
+    "City": "pretoria east",
+    "AccentCity": "Pretoria East",
+    "ProvinceName": "Gauteng",
+    "Latitude": 25.9758068,
+    "Longitude": 27.9926405,
     "ProvinceID": 6
   },
   {
@@ -39954,10 +39970,10 @@
   {
     "City": "braamfontein",
     "AccentCity": "Braamfontein",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.411281,
-    "Longitude": 26.486987,
-    "ProvinceID": 5
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1927478,
+    "Longitude": 28.0293097,
+    "ProvinceID": 6
   },
   {
     "City": "braamhoek",
@@ -43335,14 +43351,7 @@
     "Longitude": 30.356681,
     "ProvinceID": 2
   },
-  {
-    "City": "claremont",
-    "AccentCity": "Claremont",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -29.793121,
-    "Longitude": 30.897877,
-    "ProvinceID": 2
-  },
+
   {
     "City": "claremont",
     "AccentCity": "Claremont",
@@ -60864,16 +60873,16 @@
     "ProvinceID": 2
   },
   {
-    "City": "messina",
-    "AccentCity": "Messina",
+    "City": "musina",
+    "AccentCity": "Musina",
     "ProvinceName": "Limpopo",
     "Latitude": -22.351308,
     "Longitude": 30.039597,
     "ProvinceID": 9
   },
   {
-    "City": "metlerekeng",
-    "AccentCity": "Metlerekeng",
+    "City": "matlerekeng",
+    "AccentCity": "Matlerekeng",
     "ProvinceName": "Mpumalanga",
     "Latitude": -24.988792,
     "Longitude": 29.057851,
@@ -64215,14 +64224,7 @@
     "Longitude": 28.217773,
     "ProvinceID": 6
   },
-  {
-    "City": "irene",
-    "AccentCity": "Irene",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -29.455905,
-    "Longitude": 22.151263,
-    "ProvinceID": 8
-  },
+
   {
     "City": "irisdale",
     "AccentCity": "Irisdale",
@@ -64928,8 +64930,24 @@
     "ProvinceID": 6
   },
   {
+    "City": "johannesburg south",
+    "AccentCity": "Johannesburg South",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.2849145,
+    "Longitude": 27.9560413,
+    "ProvinceID": 6
+  },
+  {
     "City": "johannesburg northern surbubs",
     "AccentCity": "Johannesburg Northern Surbubs",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.0369693,
+    "Longitude": 27.9596824,
+    "ProvinceID": 6
+  },
+  {
+    "City": "johannesburg north",
+    "AccentCity": "Johannesburg North",
     "ProvinceName": "Gauteng",
     "Latitude": -26.0369693,
     "Longitude": 27.9596824,
@@ -95330,10 +95348,10 @@
   {
     "City": "faerie glen",
     "AccentCity": "Faerie Glen",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -30.857409,
-    "Longitude": 30.341502,
-    "ProvinceID": 2
+    "ProvinceName": "Gauteng",
+    "Latitude": -25.7865748,
+    "Longitude": 28.2769274,
+    "ProvinceID": 6
   },
   {
     "City": "fafung",

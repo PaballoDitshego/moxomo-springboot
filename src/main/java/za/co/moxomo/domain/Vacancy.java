@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.elasticsearch.annotations.*;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
@@ -17,7 +18,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Document(indexName = "jobs", type = "vacancy")
+@Document(indexName = "job_ads", type = "vacancy")
 @Data
 public class Vacancy {
 
@@ -62,6 +63,8 @@ public class Vacancy {
     @GeoPointField
     @ApiModelProperty(hidden=true)
     private GeoPoint geoPoint;
+    @Transient
+    private String distance;
 
     public Vacancy() {
 

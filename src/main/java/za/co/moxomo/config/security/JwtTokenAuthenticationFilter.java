@@ -1,12 +1,6 @@
 package za.co.moxomo.config.security;
 
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import za.co.moxomo.exception.CustomException;
 
@@ -28,20 +22,20 @@ public class JwtTokenAuthenticationFilter extends  OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String token = jwtTokenProvider.resolveToken(request);
+        /*String token = jwtTokenProvider.resolveToken(request);
         try {
             if (token != null && jwtTokenProvider.validateToken(token)) {
-                Authentication auth = jwtTokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+              *//*  Authentication auth = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(auth);*//*
             }
         } catch (CustomException ex) {
             //this is very important, since it guarantees the user is not authenticated at all
-            SecurityContextHolder.clearContext();
+          //  SecurityContextHolder.clearContext();
             response.sendError(ex.getHttpStatus().value(), ex.getMessage());
             return;
         }
 
-        chain.doFilter(request, response);
+        chain.doFilter(request, response);*/
     }
 
 }

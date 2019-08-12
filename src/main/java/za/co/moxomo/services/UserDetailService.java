@@ -1,15 +1,13 @@
 package za.co.moxomo.services;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.stereotype.Service;
 import za.co.moxomo.domain.User;
 import za.co.moxomo.repository.mongodb.UserRepository;
 
 
-@Service
-public class UserDetailService implements UserDetailsService {
+//@Service
+/*public class UserDetailService implements UserDetailsService {
 
 
     private UserRepository userRepository;
@@ -35,4 +33,4 @@ public class UserDetailService implements UserDetailsService {
                 .build();
 
     }
-}
+}*/

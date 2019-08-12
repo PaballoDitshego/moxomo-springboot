@@ -1,6 +1,7 @@
 package za.co.moxomo.crawlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,7 @@ public class Absa {
     private static final Logger logger = LoggerFactory.getLogger(Absa.class);
     private static final String jobUrl = "https://barclays.taleo.net/careersection/ejb/jobdetail.ftl?job=";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+    private static final String THIRTY_MINUTES = "PT30M";
 
     private VacancySearchService vacancySearchService;
 
@@ -47,6 +49,7 @@ public class Absa {
 
 
     @Scheduled(fixedDelay=3600000, initialDelay = 0)
+    @SchedulerLock(name = "absaTask", lockAtMostForString = THIRTY_MINUTES, lockAtLeastForString = THIRTY_MINUTES)
     public void crawl() {
 
         logger.info("Crawling Absa started at {}", LocalDateTime.now());

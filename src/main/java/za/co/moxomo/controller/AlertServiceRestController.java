@@ -29,7 +29,7 @@ import java.util.UUID;
 import static java.util.Optional.ofNullable;
 
 @RestController
-@RequestMapping("/alerts")
+@RequestMapping("rest/alerts")
 @Slf4j
 public class AlertServiceRestController {
 
@@ -96,6 +96,20 @@ public class AlertServiceRestController {
         log.debug("AlertPreference {}", preference);
         return ResponseEntity.ok(vacancySearchService.createSearchPreference(preference));
     }
+
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<String> delete(@PathVariable("id") String id) throws Exception {
+        log.debug("Alert delete request {}", id);
+        alertPreferenceRepository.deleteById(id);
+        return ResponseEntity.ok("Done");
+    }
+
+    @PostMapping(value = "/delete-all", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteAll(@RequestBody List<String> ids) throws Exception {
+        ids.stream().forEach(id -> alertPreferenceRepository.deleteById(id));
+        return ResponseEntity.ok("Done");
+    }
+
 
     @PostMapping(value = "/fcmtoken")
     public ResponseEntity<Boolean> saveFcmToken(@Valid @RequestParam String newToken, @RequestParam(required = false) String oldToken) throws Exception {

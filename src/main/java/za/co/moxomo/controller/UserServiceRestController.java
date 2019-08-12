@@ -15,8 +15,8 @@ import za.co.moxomo.services.UserService;
 import java.util.Objects;
 
 
-@RestController
-@RequestMapping("/users")
+//@RestController
+//@RequestMapping("/users")
 public class UserServiceRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceRestController.class);

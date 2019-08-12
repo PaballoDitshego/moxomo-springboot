@@ -38,13 +38,18 @@ public class GeoServiceImpl implements GeoService {
     }
 
     @Override
+    public void deleteGeoLocations(List<GeoLocation> geoLocations) {
+       geoLocationRepository.deleteAll(geoLocations);
+    }
+
+    @Override
     public long geoLocationCount() {
         return geoLocationRepository.count();
     }
 
     @Override
     public List<String> getLocationsSuggestions(String term) {
-        return geoLocationRepository.findAllByAccentCityIgnoreCase(term).stream()
+        return geoLocationRepository.findAllByAccentCityStartsWithIgnoreCase(term).stream()
                 .map(geoLocation -> geoLocation.accentCity.concat(", ").concat(geoLocation.provinceName)).collect(Collectors.toList());
     }
 
@@ -87,12 +92,12 @@ public class GeoServiceImpl implements GeoService {
 
         } else {
             if (arrayLength == 1) {
-                log.info("Finding approximate location for loc {}", location);
+                log.debug("Finding approximate location for loc {}", location);
                 String approximateLocation = Util.getApproximateLocation(locality[0]);
-                log.info("Approximate locale for location {} is {}", locality[0], approximateLocation);
+                log.debug("Approximate locale for location {} is {}", locality[0], approximateLocation);
                 if (!approximateLocation.equals(location)) {
                     geoLocation = geoLocationRepository.findByAccentCityIgnoreCase(approximateLocation);
-                    log.info(" found location {} for Approximate locale  {}", geoLocation.getAccentCity(), approximateLocation);
+                    log.debug(" found location {} for Approximate locale  {}", geoLocation.getAccentCity(), approximateLocation);
                     if (Objects.nonNull(geoLocation)) {
                         return geoLocation;
                     }
@@ -311,7 +316,12 @@ public class GeoServiceImpl implements GeoService {
                     }
                 }
         }
-        log.info("returning vacancy with the locality {}", vacancy.getGeoPoint().toString());
+        if(Objects.isNull(vacancy.getGeoPoint())){
+            vacancy.setGeoPoint(new GeoPoint(defaultLat, defaultLon));
+        }
+        log.debug("returning vacancy with the locality {}", vacancy.getGeoPoint().toString());
         return vacancy;
     }
+
+
 }

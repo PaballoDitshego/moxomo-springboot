@@ -11,6 +11,8 @@ public interface GeoService {
 
     void saveGeoLocations(List<GeoLocation> geoLocations);
 
+    void deleteGeoLocations(List<GeoLocation> geoLocations);
+
     long geoLocationCount();
 
     List<String> getLocationsSuggestions(String term);

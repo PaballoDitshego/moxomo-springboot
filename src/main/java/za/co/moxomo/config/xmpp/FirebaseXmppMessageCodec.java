@@ -41,7 +41,7 @@ public class FirebaseXmppMessageCodec {
                                                                         Map<String, Object> dataPart) {
         logger.debug("Generated collapseKey " + collapseKey);
 
-        FirebaseEntity gcmPayload = new FirebaseEntity(messageId, registrationID, collapseKey, dataPart, null);
+        FirebaseEntity gcmPayload = new FirebaseEntity(messageId, registrationID, collapseKey, null, dataPart);
         return constructGcmMessage(gcmPayload);
     }
 
@@ -60,7 +60,7 @@ public class FirebaseXmppMessageCodec {
         }
     }
 
-    public static Map<String, Object> createDataPart(String alertId, String title,  String description, String entityId,
+    public static Map<String, Object> createDataPart(String alertId, String title,  String description, String url, String imageUrl, String location, String alertTitle, String entityId,
                                                      Instant createdDateTime, String alertType, String entityType,
                                                      AndroidClickActionType clickAction, int priority) {
         Map<String, Object> data = new HashMap<>();
@@ -69,6 +69,10 @@ public class FirebaseXmppMessageCodec {
         data.put("body", description);
         data.put("id", entityId);
         data.put("created_date_time", createdDateTime);
+        data.put("url", url);
+        data.put("imageUrl", imageUrl);
+        data.put("location", location);
+        data.put("alertTitle", alertTitle);
         data.put("alert_type", alertType);
         data.put("entity_type", entityType);
         data.put("click_action", clickAction);

@@ -11,6 +11,8 @@ public interface GeoLocationRepository extends MongoRepository<GeoLocation, Stri
     @Query("{ 'AccentCity' : { '$regex' : ?0 , $options: 'i'}}")
     List<GeoLocation> findAllByAccentCityIgnoreCase(String accentCity);
 
+    List<GeoLocation> findAllByAccentCityStartsWithIgnoreCase(String accentCity);
+
     GeoLocation findByAccentCityIgnoreCase(String accentCity);
 
     GeoLocation findByAccentCityIgnoreCaseAndProvinceNameIgnoreCase(String accentCity, String provinceName);

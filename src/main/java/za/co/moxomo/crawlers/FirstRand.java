@@ -1,5 +1,6 @@
 package za.co.moxomo.crawlers;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -28,6 +29,7 @@ public class FirstRand {
     private static final Logger logger = LoggerFactory.getLogger(FirstRand.class);
     private static final String RMB = "https://www.firstrandjobs.mobi/Jobs/List";
     private static final String RMB_DETAIL_URL = "https://www.firstrandjobs.mobi/Jobs/Detail?refNumber=";
+    private static final String THIRTY_MIN = "PT30M";
 
     private final VacancySearchService vacancySearchService;
 
@@ -37,6 +39,7 @@ public class FirstRand {
     }
 
     @Scheduled(fixedDelay=3600000, initialDelay = 600000)
+    @SchedulerLock(name = "firstrand", lockAtMostForString = THIRTY_MIN, lockAtLeastForString = THIRTY_MIN)
     public void crawl() {
 
         logger.info("Crawling FNB started at {}", LocalDateTime.now());
@@ -85,7 +88,14 @@ public class FirstRand {
                 }
 
             }
-            vacancies.stream().forEach(this::getJobDetail);
+            for(Vacancy vacancy:vacancies){
+                try {
+                    getJobDetail(vacancy);
+                }catch (Exception e){
+                    continue;
+                }
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();

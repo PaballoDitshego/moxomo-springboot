@@ -1,5 +1,6 @@
 package za.co.moxomo.crawlers;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @ConditionalOnProperty(prefix = "crawler.toggle", name = "mrprice", havingValue="true")
 public class MrPrice {
 
+    private static final String FOURTEEN_MIN = "PT14M";
     private static final Logger logger = LoggerFactory.getLogger(MrPrice.class);
     private static final String ENDPOINT = "https://mrpcareers.azurewebsites.net/csod.json";
     private  static final String MOBILE_URL="https://yourjourney.csod.com/m/ats/careersite/index.html?site=4&c=yourjourney&lang=en-US&#jobRequisitions/";
@@ -41,6 +43,7 @@ public class MrPrice {
     }
 
     @Scheduled(fixedDelay=900000, initialDelay = 0)
+    @SchedulerLock(name = "mrprice", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
 
         logger.info("Crawling MrPrice started at {}", LocalDateTime.now());

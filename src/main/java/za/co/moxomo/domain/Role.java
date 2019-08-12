@@ -1,7 +1,6 @@
 package za.co.moxomo.domain;
-import org.springframework.security.core.GrantedAuthority;
 
-public enum Role implements GrantedAuthority {
+public enum Role {
     ROLE_ADMIN, ROLE_CLIENT;
 
     public String getAuthority() {

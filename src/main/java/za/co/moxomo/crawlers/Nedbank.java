@@ -1,6 +1,7 @@
 package za.co.moxomo.crawlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -30,8 +31,10 @@ import java.util.regex.Pattern;
 @Component
 @ConditionalOnProperty(prefix = "crawler.toggle", name = "nedbank", havingValue="true")
 public class Nedbank {
+
     private static final Logger logger = LoggerFactory.getLogger(Nedbank.class
             .getCanonicalName());
+    private static final String FOURTEEN_MIN = "PT14M";
     private VacancySearchService vacancySearchService;
     private VacancySearchRepository vacancySearchRepository;
     @Autowired
@@ -45,6 +48,7 @@ public class Nedbank {
 
 
     @Scheduled(fixedDelay = 900000, initialDelay =900000)
+    @SchedulerLock(name = "nedbank", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
         logger.debug("Nedbank crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -146,10 +150,11 @@ public class Nedbank {
             
 
 
-            jobTitle = doc.getElementById("job-title").text()
-                    .trim();
+            jobTitle = doc.title();
+
             logger.debug("job title {}", jobTitle);
-            location = doc.getElementsByClass("jobGeoLocation").first().text().trim();
+            location = doc.select("meta[name=keywords]").first()
+                    .attr("content").trim().replace(jobTitle, "").trim();
             logger.debug("location {}", location);
             description = doc.getElementsByClass("jobdescription").first().text().trim();
             description = StringUtils.substringBetween(description, "Job Purpose", ".").trim();

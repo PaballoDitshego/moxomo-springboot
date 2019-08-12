@@ -1,6 +1,7 @@
 package za.co.moxomo.crawlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,7 +35,7 @@ public class PNet {
 
     private static final Logger logger = LoggerFactory.getLogger(PNet.class
             .getCanonicalName());
-
+    private static final String FOURTEEN_MIN = "PT14M";
     private VacancySearchService vacancySearchService;
 
     @Autowired
@@ -44,6 +45,7 @@ public class PNet {
 
    // @Scheduled(fixedDelay = 900000, initialDelay = 600000)
     @Scheduled(fixedDelay = 900000, initialDelay = 0)
+    @SchedulerLock(name = "pnet", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -63,7 +65,7 @@ public class PNet {
             }
 
             if (Objects.nonNull(url)) {
-                logger.info("Crawling Pnet {}", url);
+                logger.debug("Crawling Pnet {}", url);
                 try {
                     Connection.Response response = Jsoup
                             .connect(url)
@@ -99,23 +101,23 @@ public class PNet {
                             //index document
                             Vacancy vacancy = createVacancy(url, doc);
                             String location = Util.getApproximateLocation(vacancy.getLocation());
-                            logger.info("is valid vacancy {},  {}, location {}",vacancy, Util.validate(vacancy), location);
-                            logger.info("Vacancy exists {}",vacancySearchService.isExists(vacancy) );
+                            logger.debug("is valid vacancy {},  {}, location {}",vacancy, Util.validate(vacancy), location);
+                            logger.debug("Vacancy exists {}",vacancySearchService.isExists(vacancy) );
                             if (!vacancySearchService.isExists(vacancy)) {
-                                logger.info("Saving pnet job {}",vacancy.toString());
+                                logger.debug("Saving pnet job {}",vacancy.toString());
                                 if (vacancy.getCompany().contains("Communicate")) {
                                     continue;
                                 }
                                 vacancySearchService.index(vacancy);
-                                logger.info("Saved vacancy item with id {}", vacancy.getId());
+                                logger.debug("Saved vacancy item with id {}", vacancy.getId());
                             }else{
                                 Vacancy existing = vacancySearchService.getByCompanyAndOfferId(vacancy);
-                                logger.info("Existing vacancy {}", existing.toString());
+                                logger.debug("Existing vacancy {}", existing.toString());
                                 if(!existing.getJobTitle().equalsIgnoreCase(vacancy.getJobTitle())){
-                                    logger.info("Existing vacancy title different to new");
+                                    logger.debug("Existing vacancy title different to new");
                                     vacancySearchService.delete(existing);
                                     vacancySearchService.index(vacancy);
-                                    logger.info("Done replacing old vacancy with new");
+                                    logger.debug("Done replacing old vacancy with new");
                                 }
                             }
 
@@ -162,17 +164,18 @@ public class PNet {
             jobTitle = doc.getElementsByClass("listingTitle").text()
                     .trim();
 
-            logger.info("position dd: {}", jobTitle);
+            logger.debug("position : {}", jobTitle);
             for (Element element : doc.getElementsByClass("listing__apply-now_bottom")) {
                 offerId = element.select("a").first().attr("data-offerid");
-                logger.info("offerid {}", offerId);
+                logger.debug("offerid {}", offerId);
             }
+
             if (Objects.nonNull(doc.getElementById("company-intro"))) {
                 description = doc.getElementById("company-intro").text().trim();
             } else {
                 description = jobTitle;
             }
-            logger.info("desc {}", description);
+            logger.debug("desc {}", description);
             StringBuilder builder = new StringBuilder();
             if (Objects.nonNull(doc.getElementById("job-tasks"))) {
                 for (Element responsibility : doc.getElementById("job-tasks").getAllElements()) {
@@ -180,7 +183,7 @@ public class PNet {
                 }
                 responsibilities = builder.toString();
                 builder.setLength(0);
-                logger.info("responsibilities {}", responsibilities);
+                logger.debug("responsibilities {}", responsibilities);
             }
 
             if (Objects.nonNull(doc.getElementById("job-requim"))) {
@@ -188,7 +191,7 @@ public class PNet {
                     builder.append(qualification.text().trim()).append(System.getProperty("line.separator"));
                 }
                 qualifications = builder.toString();
-                logger.info("qualification {}", qualifications);
+                logger.debug("qualification {}", qualifications);
                 builder.setLength(0);
             }
             Elements companyInfo = doc.getElementsByClass("js-company-content-card");
@@ -242,7 +245,6 @@ public class PNet {
                 }
                 if (element.className().equals("listing-list at-listing__list-icons_date")) {
                     date = element.getAllElements().last().attr("data-date");
-                    logger.info("date {}", date);
                     try {
                         advertDate = sdf.parse(date);
                     }catch (Exception e){
@@ -277,7 +279,7 @@ public class PNet {
                         break;
                     }
                 }
-                logger.info("imageUrl {]", imageUrl);
+                logger.debug("imageUrl {]", imageUrl);
 
 
             }
@@ -292,6 +294,13 @@ public class PNet {
                 }
 
             }
+            if(null == offerId || offerId.isEmpty()){
+                offerId = Util.getPnetOfferIdFromUrl(url);
+            }
+            if(company==null && imageUrl==null){
+                company="Anonymous";
+                imageUrl= "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+            }
 
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
@@ -299,8 +308,10 @@ public class PNet {
             if (vacancy.getImageUrl().contentEquals("https://www.pnet.co.za/upload_za/logo/8/5281-logo.jpg")) {
                 vacancy.setImageUrl("http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png");
             }
+
         } catch (ParseException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
+         //   e.printStackTrace();
             throw new RuntimeException(e);
         }
         return vacancy;

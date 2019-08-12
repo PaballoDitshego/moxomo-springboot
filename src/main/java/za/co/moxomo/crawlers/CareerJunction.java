@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.jsoup.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ public class CareerJunction {
     private static String CAREER = "https://www.careerjunction.co.za/jobs/results?sort=newest";
     private static final Logger logger = LoggerFactory.getLogger(CareerJunction.class);
     private VacancySearchService vacancySearchService;
+    private static final String FOURTEEN_MIN = "PT14M";
 
     @Autowired
     public CareerJunction(final VacancySearchService vacancySearchService) {
@@ -41,6 +43,7 @@ public class CareerJunction {
     }
 
     @Scheduled(fixedDelay = 900000, initialDelay = 1200000)
+    @SchedulerLock(name = "careerJuctionTask", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
         logger.info("CareerJunction crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -77,8 +80,9 @@ public class CareerJunction {
                             if (_link.length() < 1) {
                                 continue;
                             }
-                            if (_link.contains("?unmask[]=email")){
+                            if (_link.contains("?unmask[]=email") || _link.contains("?unmask[]=phone") ){
                                 _link = _link.replace("?unmask[]=email", "").trim();
+                                _link = _link.replace("?unmask[]=phone", "").trim();
                             }
                             int index = _link.indexOf('#');
                             if (index != -1) {
@@ -163,7 +167,7 @@ public class CareerJunction {
 
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Error crawling  url {}, message {}",url, e.getMessage());
             e.printStackTrace();
             throw new RuntimeException(e);
         }

@@ -1,5 +1,6 @@
 package za.co.moxomo.crawlers;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
@@ -40,6 +41,7 @@ public class Discovery {
 
     private static final String ENDPOINT = "https://www.discovery.co.za/portal/individual/discovery-career-search/search.do";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+    private static final String FOURTEEN_MIN = "PT14M";
 
     private VacancySearchService vacancySearchService;
 
@@ -50,6 +52,7 @@ public class Discovery {
 
 
     @Scheduled(fixedDelay = 900000, initialDelay = 0)
+    @SchedulerLock(name = "discovery", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
 
         logger.info("Crawling Discovery started at {}", LocalDateTime.now());

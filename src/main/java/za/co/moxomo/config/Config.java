@@ -1,8 +1,10 @@
 package za.co.moxomo.config;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import org.apache.catalina.connector.Connector;
-
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -14,7 +16,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +40,7 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.PeriodicTrigger;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import za.co.moxomo.enums.PercolatorIndexFields;
 import za.co.moxomo.exception.MoxomoResponseErrorHandler;
 
@@ -62,27 +57,47 @@ import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIO
 @EnableMongoRepositories(basePackages = {"za.co.moxomo.repository.mongodb"})
 @IntegrationComponentScan
 @EnableIntegration
-@EnableSwagger2
+//@EnableSwagger2
 public class Config {
 
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-    private static final String VACANCIES="vacancies";
+    private static final String VACANCIES = "vacancies";
     public static final String PERCOLATOR_INDEX = "percolator_index";
     public static final String PERCOLATOR_INDEX_MAPPING_TYPE = "_doc";
 
 
     @Value("${mongodb.host}")
-    private String DBHost;
+    private String mongoHost;
 
     @Value("${mongodb.port}")
-    private int DBPort;
+    private int mongoPort;
+
+    @Value("${mongodb.username}")
+    private String mongoUser;
+
+    @Value("${mongodb.password}")
+    private String mongoPassword;
+
+
 
     @Value("${elasticsearch.host}")
     private String SEARCH_HOST;
 
     @Value("${elasticsearch.port}")
     private Integer SEARCH_PORT;
+
+
+    @Value("${elasticsearch.username}")
+    private String SEARCH_USERNAME;
+
+    @Value("${elasticsearch.password}")
+    private String SEARCH_PASSWORD;
+
+
+    @Value("${elasticsearch.clusterid}")
+    private String SEARCH_CLUSTERID;
+
 
     @PostConstruct
     public void initializePercolatorIndex() {
@@ -125,7 +140,6 @@ public class Config {
     }
 
 
-
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainer() {
         return server -> {
@@ -142,24 +156,39 @@ public class Config {
         connector.setSecure(false);
         connector.setAllowTrace(false);
         return connector;
-
     }
 
     @Bean
     public MongoClient mongoClient() {
-        return new MongoClient(DBHost, DBPort);
+        String credentials = mongoUser.concat(":").concat(mongoPassword);
+        MongoClientURI uri = new MongoClientURI(
+                "mongodb+srv://".concat(credentials).concat("@").concat(mongoHost));
+        MongoClient mongoClient = new MongoClient(uri);
+        return mongoClient;
     }
 
 
-
     @Bean
-    public MongoTemplate mongoTemplate()  {
+    public MongoTemplate mongoTemplate() {
         return new MongoTemplate(mongoClient(), VACANCIES);
     }
+
     @Bean
-    public Client elasticsearchClient()  throws Exception{
-        TransportClient client = new PreBuiltTransportClient(Settings.EMPTY);
+    public Client elasticsearchClient() throws Exception {
+
+        String credentials = SEARCH_USERNAME + ":" + SEARCH_PASSWORD;
+        TransportClient client = new PreBuiltXPackTransportClient(Settings.builder()
+                .put("cluster.name", SEARCH_CLUSTERID)
+                .put("xpack.security.transport.ssl.verification_mode", "full")
+                .put("xpack.security.transport.ssl.enabled", true)
+                //.put("client.transport.nodes_sampler_interval", "5s")
+                .put("client.transport.sniff", false)
+                .put("transport.tcp.compress", true)
+                .put("request.headers.X-Found-Cluster", SEARCH_CLUSTERID)
+                .put("xpack.security.user", credentials)
+                .build());
         client.addTransportAddress(new TransportAddress(InetAddress.getByName(SEARCH_HOST), SEARCH_PORT));
+
         return client;
     }
 
@@ -221,24 +250,27 @@ public class Config {
     }
 
 
-    @Bean
+  /*  @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }*/
+
+    @Bean
+    public LockProvider lockProvider(MongoClient mongo) {
+        return new MongoLockProvider(mongo, "vacancies");
     }
 
 
-    @Bean
+  /*  @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any()).build();
-    }
+    }*/
 
     @Bean
-    public ModelMapper modelMapper(){
+    public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-
-
 
 
 }

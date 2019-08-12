@@ -1,5 +1,6 @@
 package za.co.moxomo.tasks;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class ScheduledTasks {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
     private final VacancySearchService vacancySearchService;
+    private static final String FOURTEEN_MIN = "PT14M";
 
     @Autowired
     public ScheduledTasks(VacancySearchService vacancySearchService) {
@@ -31,6 +33,7 @@ public class ScheduledTasks {
     }
 
     @Scheduled(cron = "0 1 1 * * ?")
+    @SchedulerLock(name = "deleteOldJobs", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void deleteExpired() {
         logger.info("Vacancy deletion job triggered");
         vacancySearchService.deleteOldVacancies();

@@ -1,5 +1,6 @@
 package za.co.moxomo.crawlers;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -26,11 +27,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 @ConditionalOnProperty(prefix = "crawler.toggle", name = "careers24", havingValue="true")
+
 public class Careers24 {
 
     private static final Logger logger = LoggerFactory.getLogger(Careers24.class
             .getCanonicalName());
     private VacancySearchService vacancySearchService;
+    private static final String FOURTEEN_MIN = "PT14M";
 
 
     @Autowired
@@ -39,6 +42,7 @@ public class Careers24 {
     }
 
     @Scheduled(fixedDelay = 900000, initialDelay = 0)
+    @SchedulerLock(name = "careers24", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
         logger.info("Career24 crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -139,10 +143,10 @@ public class Careers24 {
 
             jobTitle = doc.select("meta[property=og:title]").first()
                     .attr("content").trim();
-            logger.info("jobtitle {}", jobTitle);
+            logger.debug("jobtitle {}", jobTitle);
             imageUrl = doc.select("meta[property=og:image]").first()
                     .attr("content").concat(".jpeg").trim();
-            logger.info("imageUrl {}", imageUrl);
+            logger.debug("imageUrl {}", imageUrl);
             description = doc.select("meta[property=og:description]").first()
                     .attr("content").trim();
           //  logger.debug("description {}", description);
