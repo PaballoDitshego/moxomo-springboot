@@ -1,8 +1,13 @@
 package za.co.moxomo.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
@@ -35,6 +40,7 @@ import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
 import za.co.moxomo.domain.AlertPreference;
+import za.co.moxomo.domain.GeoLocation;
 import za.co.moxomo.domain.Notification;
 import za.co.moxomo.domain.Vacancy;
 import za.co.moxomo.enums.PercolatorIndexFields;
@@ -49,6 +55,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -63,6 +70,8 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(VacancySearchServiceImpl.class);
     private static final String JOBS = "job_ads";
+    private static final String GEO_POINT = "geoPoint";
+    private static final String JOB_TITLE = "jobTitle";
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
@@ -72,13 +81,16 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     private AlertPreferenceRepository alertPreferenceRepository;
     private NotificationSendingService notificationSendingService;
     private SearchSuggestionKeywordRepository searchSuggestionKeywordRepository;
+    @Autowired
+    private RestHighLevelClient restHighLevelClient;
     private GeoService geoService;
 
     @Autowired
-    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository,ElasticsearchTemplate elasticSearch,
+    public VacancySearchServiceImpl(VacancySearchRepository vacancySearchRepository, AlertPreferenceRepository alertPreferenceRepository, ElasticsearchTemplate elasticSearch,
                                     NotificationSendingService notificationSendingService, SearchSuggestionKeywordRepository searchSuggestionKeywordRepository, GeoService geoService) {
         this.vacancySearchRepository = vacancySearchRepository;
         this.elasticsearchTemplate = elasticSearch;
+
         this.alertPreferenceRepository = alertPreferenceRepository;
         this.notificationSendingService = notificationSendingService;
         this.searchSuggestionKeywordRepository = searchSuggestionKeywordRepository;
@@ -87,23 +99,31 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     @Override
     public Vacancy index(Vacancy vacancy) throws Exception {
+
+        Objects.requireNonNull(vacancy);
+
         if (!Util.validate(vacancy)) {
             throw new IllegalArgumentException("Vacancy missing some compulsory parameters");
         }
         try {
-            vacancy = geoService.geoCode(vacancy);
-            final Vacancy savedVacancy = vacancySearchRepository.save(vacancy);
-            logger.debug("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedVacancy));
-            if(Objects.nonNull(vacancy)) {
-                List<AlertPreference> alertPreferences = findMatchingPreferences(vacancy);
+            final Vacancy geoCodedVacancy = geoService.geoCode(vacancy);
+
+            logger.info("Save vacancy {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(geoCodedVacancy));
+            IndexResponse indexResponse = indexVacancy(geoCodedVacancy);
+
+            if (Objects.nonNull(indexResponse) && Objects.nonNull(geoCodedVacancy)) {
+                List<AlertPreference> alertPreferences = findMatchingPreferences(geoCodedVacancy);
                 alertPreferences.forEach(alertPreference -> {
-                    Notification notification = Util.generateNotification(savedVacancy, alertPreference);
+                    Notification notification = Util.generateNotification(geoCodedVacancy, alertPreference);
                     notificationSendingService.sendAlert(notification);
                 });
+            } else {
+                logger.error("Couldnt save vacancy {}", vacancy.toString());
             }
 
-        } catch (Exception e) {
+        } catch (ElasticsearchException e) {
             Marker timeMarker = MarkerFactory.getMarker("time");
+            logger.error("Indexing error {}", e.getDetailedMessage());
             logger.error(timeMarker, objectMapper.writeValueAsString(vacancy), e);
         }
         return vacancy;
@@ -111,12 +131,12 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     @Override
     public boolean isExists(Vacancy vacancy) {
-        return vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).size() > 0;
+        return vacancySearchRepository.findByOfferIdAndCompany(vacancy.getOfferId(), vacancy.getCompany()).size() > 0;
     }
 
     @Override
     public Vacancy getByCompanyAndOfferId(Vacancy vacancy) {
-        return vacancySearchRepository.findByOfferIdAndAndCompany(vacancy.getOfferId(), vacancy.getCompany()).get(0);
+        return vacancySearchRepository.findByOfferIdAndCompany(vacancy.getOfferId(), vacancy.getCompany()).get(0);
     }
 
 
@@ -127,14 +147,13 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     }
 
     @Override
-    public SearchResults search(String searchString, double latitude, double longitude, int offset, int limit) {
+    public SearchResults search(String searchString, double latitude, double longitude, String location, boolean filterByLocation, int offset, int limit) throws Exception {
         logger.info("Running query {}, latitude {}, longitude {}", searchString, latitude, longitude);
-
 
         MultiMatchQueryBuilder multiMatchQuery = null;
         if (Objects.nonNull(searchString)) {
             multiMatchQuery = QueryBuilders.multiMatchQuery(
-                    searchString).field("jobTitle", 5)
+                    searchString).field(JOB_TITLE, 5)
                     .field("company", 5)
                     // .field("description")
                     .field("location", 8)
@@ -146,13 +165,12 @@ public class VacancySearchServiceImpl implements VacancySearchService {
         }
         GeoPoint geoPoint = null;
 
-
         final GaussDecayFunctionBuilder advertDateDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction("advertDate", "now", "8h", "4h", 0.5).setWeight(5);
-
         FunctionScoreQueryBuilder.FilterFunctionBuilder[] functions = new FunctionScoreQueryBuilder.FilterFunctionBuilder[2];
 
         if (latitude != 0.0 && longitude != 0.0) {
             geoPoint = new GeoPoint(latitude, longitude);
+            logger.info("New geopoint {} create froon lat {}, long {}", geoPoint.toString(), latitude, longitude);
         }
         if (Objects.nonNull(geoPoint)) {
             GaussDecayFunctionBuilder geoBuilder = ScoreFunctionBuilders.gaussDecayFunction("geoPoint", geoPoint, "20km", "35km", 0.75).setWeight(4);
@@ -161,22 +179,54 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
         }
         final FunctionScoreQueryBuilder query;
-        if (Objects.isNull(geoPoint)) {
-            query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), advertDateDecayFunctionBuilder);
+        if (!filterByLocation) {
+            if (Objects.isNull(geoPoint)) {
+                query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), advertDateDecayFunctionBuilder);
+                query.boostMode(CombineFunction.MULTIPLY);
+            } else {
+                query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), functions);
+                query.boostMode(CombineFunction.MULTIPLY);
+            }
         } else {
-            query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), functions);
-        }
+            GeoLocation geoLocation;
+            BoolQueryBuilder boolQueryBuilder =QueryBuilders.boolQuery();
+            boolQueryBuilder.minimumShouldMatch(1);
+            if (Objects.nonNull(geoLocation = geoService.getGeoLocation(location))) {
+                logger.info("Perforning geolocation search for location {}", location);
+                logger.info("Creating bool query with location {} whose geopoint is {},  {}", location, geoLocation.getLatitude(), geoLocation.getLongitude());
+                geoPoint = new GeoPoint(geoLocation.getLatitude(), geoLocation.longitude);
+                boolQueryBuilder.should(QueryBuilders.matchQuery(JOB_TITLE, searchString).operator(Operator.AND).lenient(true));
+                boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.COMPANY.getFieldName(), searchString).lenient(true));
+                boolQueryBuilder.filter(QueryBuilders.geoDistanceQuery(GEO_POINT).point(geoPoint).distance(35, DistanceUnit.KILOMETERS));
 
+                query = QueryBuilders.functionScoreQuery(boolQueryBuilder, advertDateDecayFunctionBuilder);
+            } else if (Objects.nonNull(geoPoint)) {
+                logger.info("Location search unsuccessful, now perfoming geosearch with lat {} and long {}", geoPoint.lat(), geoPoint.lon());
+                if (Objects.nonNull(searchString)) {
+                    boolQueryBuilder.should(QueryBuilders.matchQuery(JOB_TITLE, searchString).operator(Operator.AND).lenient(true));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.COMPANY.getFieldName(), searchString).lenient(true));
+                } else {
+                    boolQueryBuilder.should(matchAllQuery());
+                }
+                boolQueryBuilder.filter(QueryBuilders.geoDistanceQuery(GEO_POINT).point(geoPoint).distance(35, DistanceUnit.KILOMETERS));
+                query = QueryBuilders.functionScoreQuery(boolQueryBuilder, advertDateDecayFunctionBuilder);
+
+            } else {
+                query = QueryBuilders.functionScoreQuery((Objects.nonNull(searchString)) ? multiMatchQuery.minimumShouldMatch("2") : matchAllQuery(), advertDateDecayFunctionBuilder);
+
+            }
+
+
+        }
         query.boostMode(CombineFunction.MULTIPLY);
         final PageRequest pageRequest = PageRequest.of(offset - 1, limit);
-        final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", "jobTitle", "description", "location",
+        final SourceFilter sourceFilter = new FetchSourceFilter(new String[]{"id", JOB_TITLE, "description", "location",
                 "advertDate", "imageUrl", "url", "webViewViewable", "company", "geoPoint"}, null);
         final SearchQuery searchQuery = new NativeSearchQueryBuilder().withIndices(JOBS)
                 .withQuery(query)
                 .withSourceFilter(sourceFilter)
                 .withPageable(Objects.isNull(searchString) ?
-                            PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate") : pageRequest)
-               // .withPageable(pageRequest)
+                        PageRequest.of(offset - 1, limit, Sort.Direction.DESC, "advertDate") : pageRequest)
                 .build();
 
         final int totalNumberOfElements = (int) (elasticsearchTemplate.count(searchQuery));
@@ -215,7 +265,8 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     @Override
     public AlertPreference createSearchPreference(AlertPreference alertPreference) throws IOException {
-        Objects.requireNonNull(alertPreference);
+        Objects.requireNonNull(alertPreference, "AlertPreference cannot be null");
+
         alertPreference = alertPreferenceRepository.save(alertPreference);
         BoolQueryBuilder bqb = createBoolQuery(alertPreference);
 
@@ -232,12 +283,14 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
     @Override
     public List<String> getSearchSuggestions(String term) {
+        Objects.requireNonNull(term);
+
         return searchSuggestionKeywordRepository.findAllByKeywordStartsWithIgnoreCase(term)
                 .stream().map(s -> s.getKeyword()).collect(Collectors.toList());
     }
 
     private List<AlertPreference> findMatchingPreferences(Vacancy vacancy) throws IOException {
-        logger.info("Finding matching preferences");
+        logger.debug("Finding matching preferences");
         List<AlertPreference> results = new ArrayList<>();
         PercolateQueryBuilder percolateQuery = createPercolateQuery(vacancy);
         // Percolate, by executing the percolator query in the query dsl
@@ -247,7 +300,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 .actionGet();
         if (searchResponse != null) {
             SearchHits searchHits = searchResponse.getHits();
-            logger.info("Number of searchHits {}", searchHits.totalHits);
+            logger.debug("Number of searchHits {}", searchHits.totalHits);
             if (searchHits != null && searchHits.getTotalHits() > 0) {
                 for (SearchHit hit : searchHits.getHits()) {
                     AlertPreference alertPreference;
@@ -261,10 +314,8 @@ public class VacancySearchServiceImpl implements VacancySearchService {
     }
 
 
-    private BoolQueryBuilder
-    createBoolQuery(AlertPreference preference) {
-
-
+    private BoolQueryBuilder createBoolQuery(AlertPreference preference) {
+        Objects.requireNonNull(preference);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.KEYWORD.getFieldName(), preference.getCriteria().getKeyword()).operator(Operator.AND).lenient(true));
         boolQueryBuilder.should(QueryBuilders.matchQuery(PercolatorIndexFields.COMPANY.getFieldName(), preference.getCriteria().getKeyword()).lenient(true));
@@ -280,6 +331,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
 
 
     private PercolateQueryBuilder createPercolateQuery(Vacancy vacancy) throws IOException {
+        Objects.requireNonNull(vacancy);
         XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
         docBuilder.field(PercolatorIndexFields.KEYWORD.getFieldName(), vacancy.getJobTitle());
         docBuilder.field(PercolatorIndexFields.COMPANY.getFieldName(), vacancy.getCompany());
@@ -300,7 +352,7 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 .filter(s -> Objects.nonNull(s.getGeoPoint()))
                 .map(s -> {
                     if (s.getGeoPoint() == null) {
-                        logger.info("s without distance {}", s.toString());
+                        logger.debug("s without distance {}", s.toString());
                     }
                     double distance = Util.distance(s.getGeoPoint().getLat(), s.getGeoPoint().getLon(), geoPoint.getLat(), geoPoint.getLon(), "K");
                     s.setDistance(Double.toString(Math.floor(distance)).concat(" KM"));
@@ -310,5 +362,17 @@ public class VacancySearchServiceImpl implements VacancySearchService {
                 }).collect(Collectors.toList());
     }
 
+
+    private IndexResponse indexVacancy(final Vacancy vacancy) throws IOException {
+        Map<String, Object> documentMapper = objectMapper.convertValue(vacancy, Map.class);
+
+        IndexRequest indexRequest = new IndexRequest("job_ads", "vacancy", vacancy.getId())
+                .source(documentMapper);
+
+        IndexResponse indexResponse = restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+
+
+        return indexResponse;
+    }
 
 }

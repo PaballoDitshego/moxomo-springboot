@@ -81,14 +81,7 @@ dependencies {
 	compile group: 'org.springframework.integration', name: 'spring-integration-core', version: 'springIntegrationVersion'
 	compile group: 'org.springframework.integration', name: 'spring-integration-core', version: libs.springIntegrationVersion
 	compile group: 'org.springframework.integration', name: 'spring-integration-xmpp', version: libs.springIntegrationVersion
-	compile group: 'org.springframework.integration', name: 'spring-integration-mqtt', version:  libs.springIntegrationVersion
-
-
-
-
 	
-
-
 	compile(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2') {
 		exclude(module: 'commons-logging')}
 	compile group: 'net.sourceforge.nekohtml', name: 'nekohtml', version: '1.9.22'

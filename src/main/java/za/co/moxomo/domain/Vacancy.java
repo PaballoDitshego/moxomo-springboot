@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.elasticsearch.annotations.*;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
+import za.co.moxomo.utils.Util;
 
 import java.util.Date;
 import java.util.UUID;
@@ -76,13 +77,13 @@ public class Vacancy {
 
         this.id = UUID.randomUUID().toString();
         this.jobTitle = jobTitle.trim();
-        this.description = description.trim();
+        this.description = Util.removeBadChars(description.trim());
         this.offerId = offerId.trim();
         this.company = company.trim();
         this.location = location.trim();
         this.province = province;
-        this.qualifications = qualifications;
-        this.responsibilities = responsibilities;
+        this.qualifications =Util.removeBadChars(qualifications);
+        this.responsibilities = Util.removeBadChars(responsibilities);
         this.advertDate = advertDate;
         this.contractType = contractType;
         this.imageUrl = imageUrl.trim();

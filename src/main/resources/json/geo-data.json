@@ -3938,30 +3938,6 @@
   {
     "City": "springs",
     "AccentCity": "Springs",
-    "ProvinceName": "Free State",
-    "Latitude": -29.469251,
-    "Longitude": 26.859645,
-    "ProvinceID": 3
-  },
-  {
-    "City": "springs",
-    "AccentCity": "Springs",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.466667,
-    "Longitude": 28.366667,
-    "ProvinceID": 5
-  },
-  {
-    "City": "spring's",
-    "AccentCity": "Spring's",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -32.461584,
-    "Longitude": 28.063725,
-    "ProvinceID": 5
-  },
-  {
-    "City": "springs",
-    "AccentCity": "Springs",
     "ProvinceName": "Gauteng",
     "Latitude": -26.25,
     "Longitude": 28.4,
@@ -5663,14 +5639,7 @@
     "Longitude": 27.966667,
     "ProvinceID": 10
   },
-  {
-    "City": "sutherland",
-    "AccentCity": "Sutherland",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -30.554006,
-    "Longitude": 29.791365,
-    "ProvinceID": 2
-  },
+
   {
     "City": "sutherland",
     "AccentCity": "Sutherland",
@@ -14247,22 +14216,7 @@
     "Longitude": 29.165854,
     "ProvinceID": 3
   },
-  {
-    "City": "vrede",
-    "AccentCity": "Vrede",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.388215,
-    "Longitude": 25.815778,
-    "ProvinceID": 5
-  },
-  {
-    "City": "vrede",
-    "AccentCity": "Vrede",
-    "ProvinceName": "North West",
-    "Latitude": -25.465292,
-    "Longitude": 26.552201,
-    "ProvinceID": 10
-  },
+
   {
     "City": "vreeniging",
     "AccentCity": "Vreeniging",
@@ -14935,22 +14889,7 @@
     "Longitude": 28.266667,
     "ProvinceID": 6
   },
-  {
-    "City": "waterkloof",
-    "AccentCity": "Waterkloof",
-    "ProvinceName": "Free State",
-    "Latitude": -30.309785,
-    "Longitude": 25.297067,
-    "ProvinceID": 3
-  },
-  {
-    "City": "waterkloof",
-    "AccentCity": "Waterkloof",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.683333,
-    "Longitude": 26.05,
-    "ProvinceID": 5
-  },
+
   {
     "City": "waterkloof",
     "AccentCity": "Waterkloof",
@@ -15143,22 +15082,7 @@
     "Longitude": 28.52301,
     "ProvinceID": 5
   },
-  {
-    "City": "waverley mills",
-    "AccentCity": "Waverley Mills",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.416546,
-    "Longitude": 19.225057,
-    "ProvinceID": 11
-  },
-  {
-    "City": "waverley",
-    "AccentCity": "Waverley",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -27.689953,
-    "Longitude": 30.699457,
-    "ProvinceID": 2
-  },
+
   {
     "City": "khibitswane",
     "AccentCity": "Khibitswane",
@@ -20335,14 +20259,7 @@
     "Longitude": 30.357639,
     "ProvinceID": 9
   },
-  {
-    "City": "kuruman",
-    "AccentCity": "Kuruman",
-    "ProvinceName": "Free State",
-    "Latitude": -29.95,
-    "Longitude": 27,
-    "ProvinceID": 3
-  },
+
   {
     "City": "kuruman",
     "AccentCity": "Kuruman",
@@ -21279,14 +21196,7 @@
     "Longitude": 29.490092,
     "ProvinceID": 5
   },
-  {
-    "City": "waverley",
-    "AccentCity": "Waverley",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.933333,
-    "Longitude": 26.433333,
-    "ProvinceID": 5
-  },
+
   {
     "City": "waverley",
     "AccentCity": "Waverley",
@@ -21567,14 +21477,7 @@
     "Longitude": 31.219256,
     "ProvinceID": 2
   },
-  {
-    "City": "welkom",
-    "AccentCity": "Welkom",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -28.489251,
-    "Longitude": 31.27319,
-    "ProvinceID": 2
-  },
+
   {
     "City": "welkom",
     "AccentCity": "Welkom",
@@ -21607,14 +21510,7 @@
     "Longitude": 26.547638,
     "ProvinceID": 3
   },
-  {
-    "City": "wellington",
-    "AccentCity": "Wellington",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -30.884205,
-    "Longitude": 26.430575,
-    "ProvinceID": 5
-  },
+
   {
     "City": "wellington",
     "AccentCity": "Wellington",
@@ -23082,14 +22978,6 @@
   {
     "City": "witbank",
     "AccentCity": "Witbank",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.104357,
-    "Longitude": 26.862583,
-    "ProvinceID": 5
-  },
-  {
-    "City": "witbank",
-    "AccentCity": "Witbank",
     "ProvinceName": "Mpumalanga",
     "Latitude": -25.871331,
     "Longitude": 29.233234,
@@ -23783,14 +23671,7 @@
     "Longitude": 22.66941,
     "ProvinceID": 11
   },
-  {
-    "City": "worcester",
-    "AccentCity": "Worcester",
-    "ProvinceName": "Limpopo",
-    "Latitude": -24.294208,
-    "Longitude": 30.563339,
-    "ProvinceID": 9
-  },
+
   {
     "City": "worcester",
     "AccentCity": "Worcester",
@@ -26823,14 +26704,7 @@
     "Longitude": 30.976104,
     "ProvinceID": 2
   },
-  {
-    "City": "phoenix",
-    "AccentCity": "Phoenix",
-    "ProvinceName": "Mpumalanga",
-    "Latitude": -26.07098,
-    "Longitude": 29.204512,
-    "ProvinceID": 7
-  },
+
   {
     "City": "phoffu",
     "AccentCity": "Phoffu",
@@ -27206,14 +27080,6 @@
     "Latitude": -29.833333,
     "Longitude": 30.85,
     "ProvinceID": 2
-  },
-  {
-    "City": "pinelands",
-    "AccentCity": "Pinelands",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.934769,
-    "Longitude": 18.517694,
-    "ProvinceID": 11
   },
   {
     "City": "pine tops",
@@ -31194,19 +31060,12 @@
   {
     "City": "arcadia",
     "AccentCity": "Arcadia",
-    "ProvinceName": "Free State",
-    "Latitude": -27.316667,
-    "Longitude": 29.283333,
-    "ProvinceID": 3
+    "ProvinceName": "Gauteng",
+    "Latitude": -25.7470154,
+    "Longitude": 28.1969604,
+    "ProvinceID": 6
   },
-  {
-    "City": "arcadia",
-    "AccentCity": "Arcadia",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -33.008775,
-    "Longitude": 27.904818,
-    "ProvinceID": 5
-  },
+
   {
     "City": "archbell",
     "AccentCity": "Archbell",
@@ -33671,22 +33530,7 @@
     "Longitude": 31,
     "ProvinceID": 2
   },
-  {
-    "City": "berea",
-    "AccentCity": "Berea",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -30.937454,
-    "Longitude": 26.376926,
-    "ProvinceID": 5
-  },
-  {
-    "City": "berea",
-    "AccentCity": "Berea",
-    "ProvinceName": "Western Cape",
-    "Latitude": -34.044724,
-    "Longitude": 19.518787,
-    "ProvinceID": 11
-  },
+
   {
     "City": "bereaville",
     "AccentCity": "Bereaville",
@@ -34259,7 +34103,7 @@
     "City": "pretoria east",
     "AccentCity": "Pretoria East",
     "ProvinceName": "Gauteng",
-    "Latitude": 25.9758068,
+    "Latitude": -25.9758068,
     "Longitude": 27.9926405,
     "ProvinceID": 6
   },
@@ -36783,38 +36627,7 @@
     "Longitude": 30.272352,
     "ProvinceID": 2
   },
-  {
-    "City": "richmond",
-    "AccentCity": "Richmond",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -33.729954,
-    "Longitude": 26.578112,
-    "ProvinceID": 5
-  },
-  {
-    "City": "richmond",
-    "AccentCity": "Richmond",
-    "ProvinceName": "Gauteng",
-    "Latitude": -26.693717,
-    "Longitude": 27.937401,
-    "ProvinceID": 6
-  },
-  {
-    "City": "richmond",
-    "AccentCity": "Richmond",
-    "ProvinceName": "Mpumalanga",
-    "Latitude": -24.995393,
-    "Longitude": 31.023723,
-    "ProvinceID": 7
-  },
-  {
-    "City": "richmond",
-    "AccentCity": "Richmond",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -31.41345,
-    "Longitude": 23.945169,
-    "ProvinceID": 8
-  },
+
   {
     "City": "richmond-rydal vale",
     "AccentCity": "Richmond-Rydal Vale",
@@ -40767,22 +40580,7 @@
     "Longitude": 18.400722,
     "ProvinceID": 11
   },
-  {
-    "City": "brooklyn",
-    "AccentCity": "Brooklyn",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -28.919021,
-    "Longitude": 31.331005,
-    "ProvinceID": 2
-  },
-  {
-    "City": "brooklyn",
-    "AccentCity": "Brooklyn",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.087442,
-    "Longitude": 25.827177,
-    "ProvinceID": 5
-  },
+
   {
     "City": "brooklyn",
     "AccentCity": "Brooklyn",
@@ -40791,14 +40589,7 @@
     "Longitude": 28.241388,
     "ProvinceID": 6
   },
-  {
-    "City": "brooklyn",
-    "AccentCity": "Brooklyn",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.90982,
-    "Longitude": 18.481978,
-    "ProvinceID": 11
-  },
+
   {
     "City": "brooksby",
     "AccentCity": "Brooksby",
@@ -41519,14 +41310,7 @@
     "Longitude": 26.328623,
     "ProvinceID": 5
   },
-  {
-    "City": "burgersdorp",
-    "AccentCity": "Burgersdorp",
-    "ProvinceName": "North West",
-    "Latitude": -26.166667,
-    "Longitude": 26.166667,
-    "ProvinceID": 10
-  },
+
   {
     "City": "burgersfort",
     "AccentCity": "Burgersfort",
@@ -41950,14 +41734,6 @@
     "Latitude": -25.007668,
     "Longitude": 31.234804,
     "ProvinceID": 9
-  },
-  {
-    "City": "caledon",
-    "AccentCity": "Caledon",
-    "ProvinceName": "Free State",
-    "Latitude": -30.200358,
-    "Longitude": 26.187651,
-    "ProvinceID": 3
   },
   {
     "City": "caledon",
@@ -42935,14 +42711,7 @@
     "Longitude": 30.891699,
     "ProvinceID": 2
   },
-  {
-    "City": "chatsworth",
-    "AccentCity": "Chatsworth",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.547776,
-    "Longitude": 18.582008,
-    "ProvinceID": 11
-  },
+
   {
     "City": "chatsworth indian township",
     "AccentCity": "Chatsworth Indian Township",
@@ -43351,7 +43120,6 @@
     "Longitude": 30.356681,
     "ProvinceID": 2
   },
-
   {
     "City": "claremont",
     "AccentCity": "Claremont",
@@ -44192,22 +43960,7 @@
     "Longitude": 26.003538,
     "ProvinceID": 3
   },
-  {
-    "City": "constantia",
-    "AccentCity": "Constantia",
-    "ProvinceName": "Free State",
-    "Latitude": -29.6,
-    "Longitude": 26.55,
-    "ProvinceID": 3
-  },
-  {
-    "City": "constantia",
-    "AccentCity": "Constantia",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -29.984044,
-    "Longitude": 21.670991,
-    "ProvinceID": 8
-  },
+
   {
     "City": "constantia",
     "AccentCity": "Constantia",
@@ -48000,14 +47753,7 @@
     "Longitude": 29.364496,
     "ProvinceID": 3
   },
-  {
-    "City": "langkloof",
-    "AccentCity": "Langkloof",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.609966,
-    "Longitude": 25.898835,
-    "ProvinceID": 5
-  },
+
   {
     "City": "langkloof",
     "AccentCity": "Langkloof",
@@ -50304,14 +50050,7 @@
     "Longitude": 28.971159,
     "ProvinceID": 5
   },
-  {
-    "City": "london",
-    "AccentCity": "London",
-    "ProvinceName": "Mpumalanga",
-    "Latitude": -24.766667,
-    "Longitude": 30.866667,
-    "ProvinceID": 7
-  },
+
   {
     "City": "london",
     "AccentCity": "London",
@@ -60512,22 +60251,7 @@
     "Longitude": 26.383333,
     "ProvinceID": 10
   },
-  {
-    "City": "melrose",
-    "AccentCity": "Melrose",
-    "ProvinceName": "Free State",
-    "Latitude": -29.490395,
-    "Longitude": 26.888389,
-    "ProvinceID": 3
-  },
-  {
-    "City": "melrose",
-    "AccentCity": "Melrose",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -33.439045,
-    "Longitude": 25.953985,
-    "ProvinceID": 5
-  },
+
   {
     "City": "melrose",
     "AccentCity": "Melrose",
@@ -61832,14 +61556,7 @@
     "Longitude": 27.316667,
     "ProvinceID": 10
   },
-  {
-    "City": "hermanus",
-    "AccentCity": "Hermanus",
-    "ProvinceName": "Free State",
-    "Latitude": -30.261411,
-    "Longitude": 26.337987,
-    "ProvinceID": 3
-  },
+
   {
     "City": "hermanus",
     "AccentCity": "Hermanus",
@@ -62208,14 +61925,7 @@
     "Longitude": 30.76396,
     "ProvinceID": 2
   },
-  {
-    "City": "hillcrest",
-    "AccentCity": "Hillcrest",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.891228,
-    "Longitude": 26.814847,
-    "ProvinceID": 5
-  },
+
   {
     "City": "hillcroft",
     "AccentCity": "Hillcroft",
@@ -64224,7 +63934,6 @@
     "Longitude": 28.217773,
     "ProvinceID": 6
   },
-
   {
     "City": "irisdale",
     "AccentCity": "Irisdale",
@@ -67009,22 +66718,7 @@
     "Longitude": 21.157857,
     "ProvinceID": 8
   },
-  {
-    "City": "kenilworth",
-    "AccentCity": "Kenilworth",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -30.429308,
-    "Longitude": 28.835646,
-    "ProvinceID": 2
-  },
-  {
-    "City": "kenilworth",
-    "AccentCity": "Kenilworth",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.89781,
-    "Longitude": 25.920902,
-    "ProvinceID": 5
-  },
+
   {
     "City": "kenilworth",
     "AccentCity": "Kenilworth",
@@ -67033,14 +66727,7 @@
     "Longitude": 28.047313,
     "ProvinceID": 6
   },
-  {
-    "City": "kenilworth",
-    "AccentCity": "Kenilworth",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -28.708264,
-    "Longitude": 24.790968,
-    "ProvinceID": 8
-  },
+
   {
     "City": "kenmore",
     "AccentCity": "Kenmore",
@@ -68577,14 +68264,7 @@
     "Longitude": 29.987731,
     "ProvinceID": 2
   },
-  {
-    "City": "roodekop",
-    "AccentCity": "Roodekop",
-    "ProvinceName": "Free State",
-    "Latitude": -29.195227,
-    "Longitude": 26.773484,
-    "ProvinceID": 3
-  },
+
   {
     "City": "roodekrans",
     "AccentCity": "Roodekrans",
@@ -68609,22 +68289,7 @@
     "Longitude": 27.816667,
     "ProvinceID": 10
   },
-  {
-    "City": "roodepoort nedersetting",
-    "AccentCity": "Roodepoort Nedersetting",
-    "ProvinceName": "Free State",
-    "Latitude": -27.219124,
-    "Longitude": 27.505998,
-    "ProvinceID": 3
-  },
-  {
-    "City": "roodepoort",
-    "AccentCity": "Roodepoort",
-    "ProvinceName": "Free State",
-    "Latitude": -27.166667,
-    "Longitude": 28.166667,
-    "ProvinceID": 3
-  },
+
   {
     "City": "roodepoort",
     "AccentCity": "Roodepoort",
@@ -69156,18 +68821,10 @@
   {
     "City": "rosebank",
     "AccentCity": "Rosebank",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.261133,
-    "Longitude": 26.97244,
-    "ProvinceID": 5
-  },
-  {
-    "City": "rosebank",
-    "AccentCity": "Rosebank",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.950865,
-    "Longitude": 18.471641,
-    "ProvinceID": 11
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.1438589,
+    "Longitude": 28.0353966,
+    "ProvinceID": 6
   },
   {
     "City": "rosedale",
@@ -69424,14 +69081,6 @@
     "Latitude": -33.833333,
     "Longitude": 18.516667,
     "ProvinceID": 11
-  },
-  {
-    "City": "rugby",
-    "AccentCity": "Rugby",
-    "ProvinceName": "North West",
-    "Latitude": -26.711982,
-    "Longitude": 23.210815,
-    "ProvinceID": 10
   },
   {
     "City": "rugby",
@@ -73780,14 +73429,6 @@
   {
     "City": "silverton",
     "AccentCity": "Silverton",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -29.833333,
-    "Longitude": 30.583333,
-    "ProvinceID": 2
-  },
-  {
-    "City": "silverton",
-    "AccentCity": "Silverton",
     "ProvinceName": "Gauteng",
     "Latitude": -25.725892,
     "Longitude": 28.313702,
@@ -75745,22 +75386,7 @@
     "Longitude": 25.774708,
     "ProvinceID": 10
   },
-  {
-    "City": "springbok",
-    "AccentCity": "Springbok",
-    "ProvinceName": "Free State",
-    "Latitude": -29.305172,
-    "Longitude": 25.576718,
-    "ProvinceID": 3
-  },
-  {
-    "City": "springbok",
-    "AccentCity": "Springbok",
-    "ProvinceName": "Mpumalanga",
-    "Latitude": -26.054315,
-    "Longitude": 29.332055,
-    "ProvinceID": 7
-  },
+
   {
     "City": "springbok",
     "AccentCity": "Springbok",
@@ -75769,14 +75395,7 @@
     "Longitude": 17.886495,
     "ProvinceID": 8
   },
-  {
-    "City": "springbok",
-    "AccentCity": "Springbok",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.616667,
-    "Longitude": 18.516667,
-    "ProvinceID": 11
-  },
+
   {
     "City": "springfield collieries",
     "AccentCity": "Springfield Collieries",
@@ -75800,22 +75419,6 @@
     "Latitude": -29.033333,
     "Longitude": 29.616667,
     "ProvinceID": 2
-  },
-  {
-    "City": "springfield",
-    "AccentCity": "Springfield",
-    "ProvinceName": "Free State",
-    "Latitude": -28.532822,
-    "Longitude": 27.525494,
-    "ProvinceID": 3
-  },
-  {
-    "City": "springfield",
-    "AccentCity": "Springfield",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.170425,
-    "Longitude": 25.598782,
-    "ProvinceID": 5
   },
   {
     "City": "springfontein",
@@ -76145,22 +75748,7 @@
     "Longitude": 28.04942,
     "ProvinceID": 3
   },
-  {
-    "City": "middelburg",
-    "AccentCity": "Middelburg",
-    "ProvinceName": "Free State",
-    "Latitude": -29.71296,
-    "Longitude": 26.783772,
-    "ProvinceID": 3
-  },
-  {
-    "City": "middelburg",
-    "AccentCity": "Middelburg",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -31.492849,
-    "Longitude": 25.00633,
-    "ProvinceID": 5
-  },
+
   {
     "City": "middelburg",
     "AccentCity": "Middelburg",
@@ -77969,14 +77557,7 @@
     "Longitude": 28.166905,
     "ProvinceID": 6
   },
-  {
-    "City": "modderfontein",
-    "AccentCity": "Modderfontein",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -28.808932,
-    "Longitude": 17.197388,
-    "ProvinceID": 8
-  },
+
   {
     "City": "modderpoort",
     "AccentCity": "Modderpoort",
@@ -79713,14 +79294,7 @@
     "Longitude": 23.803804,
     "ProvinceID": 10
   },
-  {
-    "City": "morningside",
-    "AccentCity": "Morningside",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -29.820209,
-    "Longitude": 31.017358,
-    "ProvinceID": 2
-  },
+
   {
     "City": "morningside",
     "AccentCity": "Morningside",
@@ -84193,46 +83767,7 @@
     "Longitude": 31.016667,
     "ProvinceID": 2
   },
-  {
-    "City": "newlands",
-    "AccentCity": "Newlands",
-    "ProvinceName": "KwaZulu Natal",
-    "Latitude": -29.777846,
-    "Longitude": 30.961123,
-    "ProvinceID": 2
-  },
-  {
-    "City": "newlands",
-    "AccentCity": "Newlands",
-    "ProvinceName": "Free State",
-    "Latitude": -29.204759,
-    "Longitude": 27.154655,
-    "ProvinceID": 3
-  },
-  {
-    "City": "newlands",
-    "AccentCity": "Newlands",
-    "ProvinceName": "Eastern Cape",
-    "Latitude": -32.883333,
-    "Longitude": 27.75,
-    "ProvinceID": 5
-  },
-  {
-    "City": "newlands",
-    "AccentCity": "Newlands",
-    "ProvinceName": "Gauteng",
-    "Latitude": -26.169168,
-    "Longitude": 27.96611,
-    "ProvinceID": 6
-  },
-  {
-    "City": "newlands",
-    "AccentCity": "Newlands",
-    "ProvinceName": "Northern Cape",
-    "Latitude": -30.969397,
-    "Longitude": 22.113529,
-    "ProvinceID": 8
-  },
+
   {
     "City": "newlands",
     "AccentCity": "Newlands",
@@ -91081,14 +90616,7 @@
     "Longitude": 28.313536,
     "ProvinceID": 5
   },
-  {
-    "City": "douglas",
-    "AccentCity": "Douglas",
-    "ProvinceName": "Mpumalanga",
-    "Latitude": -26.028172,
-    "Longitude": 29.368178,
-    "ProvinceID": 7
-  },
+
   {
     "City": "douglas",
     "AccentCity": "Douglas",
@@ -93177,14 +92705,7 @@
     "Longitude": 28.568056,
     "ProvinceID": 6
   },
-  {
-    "City": "elandsfontein",
-    "AccentCity": "Elandsfontein",
-    "ProvinceName": "Western Cape",
-    "Latitude": -33.171208,
-    "Longitude": 19.330762,
-    "ProvinceID": 11
-  },
+
   {
     "City": "elands height",
     "AccentCity": "Elands Height",
@@ -93993,14 +93514,7 @@
     "Longitude": 26.460422,
     "ProvinceID": 5
   },
-  {
-    "City": "emmarentia",
-    "AccentCity": "Emmarentia",
-    "ProvinceName": "Free State",
-    "Latitude": -30.526081,
-    "Longitude": 26.505502,
-    "ProvinceID": 3
-  },
+
   {
     "City": "emmarentia",
     "AccentCity": "Emmarentia",
@@ -96050,13 +95564,13 @@
     "ProvinceID": 6
   },
   {
-  "City": "denver",
-  "AccentCity": "Denver",
-  "ProvinceName": "Gauteng",
-  "Latitude": -26.2095644,
-  "Longitude": 28.0805293,
-  "ProvinceID": 6
-},
+    "City": "denver",
+    "AccentCity": "Denver",
+    "ProvinceName": "Gauteng",
+    "Latitude": -26.2095644,
+    "Longitude": 28.0805293,
+    "ProvinceID": 6
+  },
   {
     "City": "weltevreden park",
     "AccentCity": "Weltevreden Park",
@@ -101321,14 +100835,7 @@
     "Longitude": 22.234853,
     "ProvinceID": 8
   },
-  {
-    "City": "goodwood",
-    "AccentCity": "Goodwood",
-    "ProvinceName": "North West",
-    "Latitude": -26.4533,
-    "Longitude": 24.259631,
-    "ProvinceID": 10
-  },
+
   {
     "City": "goodwood",
     "AccentCity": "Goodwood",

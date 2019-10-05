@@ -40,6 +40,7 @@ public class GeoServiceImpl implements GeoService {
     @Override
     public void deleteGeoLocations(List<GeoLocation> geoLocations) {
        geoLocationRepository.deleteAll(geoLocations);
+
     }
 
     @Override
@@ -76,6 +77,8 @@ public class GeoServiceImpl implements GeoService {
     }
 
 
+
+
     /* the code below is terrible and brittle, go ahead and modify if you think you can improve it, if not ignore because its that bad*/
     @Override
     public GeoLocation getGeoLocation(String loc) throws Exception {
@@ -83,9 +86,9 @@ public class GeoServiceImpl implements GeoService {
         GeoLocation geoLocation;
         String location = loc;
         String[] locality = location.split(",");
-        log.info("Locality split {}", String.valueOf(locality));
+        log.debug("Locality split {}", String.valueOf(locality));
         int arrayLength = locality.length;
-        log.info("Locality split length {}", arrayLength);
+        log.debug("Locality split length {}", arrayLength);
 
         if (Objects.nonNull(geoLocationRepository.findByAccentCityIgnoreCase(locality[0]))) {
             return geoLocationRepository.findByAccentCityIgnoreCase(locality[0]);
@@ -193,26 +196,26 @@ public class GeoServiceImpl implements GeoService {
     }
 
 
-    private Vacancy doGeoCoding(Vacancy vacancy) throws Exception {
+    private Vacancy doGeoCoding(final Vacancy vacancy) throws Exception {
         Objects.requireNonNull(vacancy);
-        log.info("Getting geoData for vacancy id {}, location {}", vacancy.getId(), vacancy.getLocation());
+        log.debug("Getting geoData for vacancy id {}, location {}", vacancy.getId(), vacancy.getLocation());
         GeoLocation geoLocation;
         String location = vacancy.getLocation();
         String[] locality = location.split(",");
-        log.info("Locality split {}", String.valueOf(locality));
+        log.debug("Locality split {}", String.valueOf(locality));
         int arrayLength = locality.length;
-        log.info("Locality split length {}", arrayLength);
+        log.debug("Locality split length {}", arrayLength);
 
 
         if (Objects.nonNull(geoLocationRepository.findByAccentCityIgnoreCase(locality[0]))) {
             geoLocation = geoLocationRepository.findByAccentCityIgnoreCase(locality[0]);
-            log.info("Found location {}", geoLocation.toString());
+            log.debug("Found location {}", geoLocation.toString());
             vacancy.setGeoPoint(new GeoPoint(geoLocation.latitude, geoLocation.longitude));
         } else {
             if (arrayLength == 1) {
-                log.info("Finding approximate location for loc {}", location);
+                log.debug("Finding approximate location for loc {}", location);
                 String approximateLocation = Util.getApproximateLocation(locality[0]);
-                log.info("Approximate locale for location {} is {}", locality[0], approximateLocation);
+                log.debug("Approximate locale for location {} is {}", locality[0], approximateLocation);
                 if (!approximateLocation.equals(location)) {
                     geoLocation = geoLocationRepository.findByAccentCityIgnoreCase(approximateLocation);
                     log.info(" found location {} for Approximate locale  {}", geoLocation.getAccentCity(), approximateLocation);
@@ -226,7 +229,7 @@ public class GeoServiceImpl implements GeoService {
             } else if (arrayLength == 2) {
                 if (Util.isProvinceName(locality[1]) && Objects.nonNull(geoLocationRepository.findByAccentCityIgnoreCaseAndProvinceNameIgnoreCase(locality[0], locality[1]))) {
                     geoLocation = geoLocationRepository.findByAccentCityIgnoreCaseAndProvinceNameIgnoreCase(locality[0], locality[1]);
-                    log.info("Found location {}", geoLocation.toString());
+                    log.debug("Found location {}", geoLocation.toString());
                     vacancy.setGeoPoint(new GeoPoint(geoLocation.latitude, geoLocation.longitude));
                 } else if (Objects.nonNull(geoLocationRepository.findByAccentCityIgnoreCase((locality[0])))) {
                     geoLocation = geoLocationRepository.findByAccentCityIgnoreCase((locality[0]));

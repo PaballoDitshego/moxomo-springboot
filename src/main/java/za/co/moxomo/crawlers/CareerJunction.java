@@ -72,7 +72,7 @@ public class CareerJunction {
                                     "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
                             .timeout(60000).execute();
 
-                    Document doc = response.parse();
+                    Document doc = response.charset("UTF-8").parse();
                     if (Objects.nonNull(doc)) {
                         Elements links = doc.select("a");
                         for (Element link : links) {

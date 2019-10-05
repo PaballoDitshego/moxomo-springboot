@@ -121,8 +121,8 @@ public class AlertServiceRestController {
                 alertPreferenceRepository.save(alertPreference);
             });
         }
-        FCMToken fcmToken;
-        if (Objects.nonNull(fcmToken = fcmTokenRepository.findByToken(oldToken))) {
+        FCMToken fcmToken =fcmTokenRepository.findByToken(oldToken);
+        if (Objects.nonNull(fcmToken)) {
             fcmToken.setToken(newToken);
         } else {
             fcmToken = new FCMToken();

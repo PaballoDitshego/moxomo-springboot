@@ -47,13 +47,15 @@ public class SearchServiceRestController {
     public DeferredResult<ResponseEntity<ResponseWrapper>> getVacancies(@RequestParam(required = false) String searchString,
                                                                         @RequestParam(required = false) double latitude,
                                                                         @RequestParam(required = false) double longitude,
+                                                                        @RequestParam(required = false) String location,
+                                                                        @RequestParam(required = false) boolean filterByLocation,
                                                                         @RequestParam int offset, @RequestParam int limit) {
 
         DeferredResult<ResponseEntity<ResponseWrapper>> deferredResult = new DeferredResult<>();
         CompletableFuture.supplyAsync(() -> {
             ResponseWrapper response;
             try {
-                response = vacancySearchService.search(searchString, latitude, longitude, offset, limit);
+                response = vacancySearchService.search(searchString, latitude, longitude, location,filterByLocation, offset, limit);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -61,6 +63,7 @@ public class SearchServiceRestController {
             return response;
         }, asyncExecutor).whenCompleteAsync((result, error) -> {
             if (Objects.nonNull(error)) {
+                logger.error(error.getMessage());
                 deferredResult.setErrorResult(error);
             } else {
                 deferredResult.setResult(new ResponseEntity<>(result, HttpStatus.OK));

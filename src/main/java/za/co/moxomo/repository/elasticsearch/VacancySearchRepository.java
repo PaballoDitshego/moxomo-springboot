@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface VacancySearchRepository extends ElasticsearchRepository<Vacancy, String> {
 
-    List<Vacancy> findByOfferIdAndAndCompany(String offerId, String company);
+    List<Vacancy> findByOfferIdAndCompany(String offerId, String company);
     List<Vacancy> findByAdvertDateLessThan(Date date);
 }

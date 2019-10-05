@@ -194,6 +194,18 @@ public class Util {
         }
     }
 
+    public static String removeBadChars(String s) {
+        if (s == null) return null;
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<s.length();i++){
+            if (Character.isHighSurrogate(s.charAt(i))) continue;
+            if (Character.isLowSurrogate(s.charAt(i))) continue;
+
+            sb.append(s.charAt(i));
+        }
+        return sb.toString();
+    }
+
     private static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 

@@ -18,7 +18,8 @@ public interface VacancySearchService {
 
     boolean isExists(Vacancy vacancy);
 
-    SearchResults search(String searchString, double latitude, double longitude, int offset, int limit);
+    SearchResults search(String searchString, double latitude, double longitude, String location, boolean filterByLocation, int offset, int limit) throws Exception;
+
 
     void deleteOldVacancies();
 

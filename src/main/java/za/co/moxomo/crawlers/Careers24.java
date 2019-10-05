@@ -73,7 +73,7 @@ public class Careers24 {
                                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
                             .timeout(60000).execute();
 
-                    Document doc = response.parse();
+                    Document doc = response.charset("UTF-8").parse();
                     if (Objects.nonNull(doc)) {
                         Elements links = doc.select("a");
                         for (Element link : links) {

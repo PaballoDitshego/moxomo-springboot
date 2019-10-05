@@ -2,15 +2,20 @@ package za.co.moxomo.crawlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.apache.commons.lang.CharSet;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.elasticsearch.core.query.GetQuery;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import za.co.moxomo.crawlers.model.pnet.AdditionalInfo;
@@ -44,8 +49,8 @@ public class PNet {
     }
 
    // @Scheduled(fixedDelay = 900000, initialDelay = 600000)
-    @Scheduled(fixedDelay = 900000, initialDelay = 0)
-    @SchedulerLock(name = "pnet", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
+   @Scheduled(fixedDelay = 900000, initialDelay = 0)
+   @SchedulerLock(name = "pnet", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
     public void crawl() {
         logger.info("Pnet crawl started at {} ", LocalDateTime.now());
         long startTime = System.currentTimeMillis();
@@ -75,7 +80,7 @@ public class PNet {
                             .timeout(60000).execute();
                     crawledUrls.add(url);
 
-                    Document doc = response.parse();
+                    Document doc = response.charset("UTF-8").parse();
                     if (Objects.nonNull(doc)) {
                         Elements links = doc.select("a");
                         for (Element link : links) {
@@ -94,6 +99,10 @@ public class PNet {
                             if (_link.toLowerCase().contains("jobs--")
                                     || _link.toLowerCase().contains("inline")
                             ) {
+                                if(_link.startsWith("https://7lwv.adj.st")){
+                                    String linkExtract =StringUtils.substringAfter(_link, "adjust_fallback=");
+                                    _link = linkExtract.replace("%3A%2F%2F", "://").replace("%2F", "/");
+                                }
                                 urlsToCrawl.add(_link);
                             }
                         }
@@ -116,8 +125,8 @@ public class PNet {
                                 if(!existing.getJobTitle().equalsIgnoreCase(vacancy.getJobTitle())){
                                     logger.debug("Existing vacancy title different to new");
                                     vacancySearchService.delete(existing);
-                                    vacancySearchService.index(vacancy);
-                                    logger.debug("Done replacing old vacancy with new");
+                                    //vacancySearchService.index(vacancy);
+                                    //logger.debug("Done replacing old vacancy with new");
                                 }
                             }
 
@@ -137,7 +146,7 @@ public class PNet {
         logger.info("Pnet crawl ended at {} and took : {} ms ", LocalDateTime.now(), executeTime);
     }
 
-    private Vacancy createVacancy(String url, Document doc) {
+    private  static Vacancy createVacancy(String url, Document doc) {
         Objects.requireNonNull(url);
         Objects.requireNonNull(doc);
         Vacancy vacancy;
@@ -300,7 +309,25 @@ public class PNet {
             if(company==null && imageUrl==null){
                 company="Anonymous";
                 imageUrl= "http://media.stepstone.com/modules/tracking/resources/images/smartbanner_icon_pnet.png";
+
             }
+           if(Objects.nonNull(description)) description =Jsoup.clean(description, Whitelist.none());
+            description = StringUtils.normalizeSpace(description);
+            description = StringEscapeUtils.unescapeJavaScript(description);
+            description = StringEscapeUtils.unescapeHtml(description);
+            description = description.replaceAll("^ *\\d*\\.", "-");
+
+
+
+           responsibilities = StringEscapeUtils.unescapeJavaScript(responsibilities);
+           responsibilities = StringUtils.normalizeSpace(responsibilities);
+          // if(Objects.nonNull(responsibilities))responsibilities = Jsoup.clean(responsibilities, Whitelist.none());
+           if(Objects.nonNull(responsibilities)) responsibilities = responsibilities.replaceAll(" ^*\\d*\\.", "-");
+
+           qualifications = StringUtils.normalizeSpace(qualifications);
+           qualifications= StringEscapeUtils.unescapeJavaScript(qualifications);
+          // if(Objects.nonNull(qualifications))qualifications = Jsoup.clean(qualifications, Whitelist.none());
+            if(Objects.nonNull(qualifications)) qualifications = qualifications.replaceAll(" ^*\\d*\\.", "-");
 
             vacancy = new Vacancy(jobTitle, description, offerId, company, location,
                     location, qualifications, responsibilities, advertDate,
@@ -317,5 +344,23 @@ public class PNet {
         return vacancy;
     }
 
+  //  @Scheduled(fixedDelay = 900000, initialDelay = 0)
+/*    public static void main(String ...args)
+     throws Exception{
+        Connection.Response response = Jsoup
+                .connect("https://www.pnet.co.za/jobs--Java-Developer-Intermediate-2-year-contract-Sandton-Blue-Net-Solutions--3002558-inline.html")
+                .ignoreHttpErrors(true)
+                .userAgent(
+                        "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev>(KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev>")
+                .timeout(60000).execute();
 
+
+        Document doc = response.charset("UTF-8").parse();
+        Vacancy vacancy = createVacancy("https://www.pnet.co.za/jobs--Java-Developer-Intermediate-2-year-contract-Sandton-Blue-Net-Solutions--3002558-inline.html", doc);
+        ObjectMapper mapper = new ObjectMapper();
+        logger.info("vacancy {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(vacancy));
+        logger.info("vavancy to string {}", vacancy);
+
+
+    }*/
 }

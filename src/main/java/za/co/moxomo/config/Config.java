@@ -5,12 +5,20 @@ import com.mongodb.MongoClientURI;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import org.apache.catalina.connector.Connector;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -45,10 +53,13 @@ import za.co.moxomo.enums.PercolatorIndexFields;
 import za.co.moxomo.exception.MoxomoResponseErrorHandler;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import static javax.net.ssl.SSLContext.getDefault;
 import static org.apache.http.conn.params.ConnManagerParams.DEFAULT_MAX_TOTAL_CONNECTIONS;
 import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIONS_PER_ROUTE;
 
@@ -60,6 +71,7 @@ import static org.apache.http.conn.params.ConnPerRouteBean.DEFAULT_MAX_CONNECTIO
 //@EnableSwagger2
 public class Config {
 
+    private static final String HTTPS = "https";
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     private static final String VACANCIES = "vacancies";
@@ -84,8 +96,11 @@ public class Config {
     @Value("${elasticsearch.host}")
     private String SEARCH_HOST;
 
-    @Value("${elasticsearch.port}")
-    private Integer SEARCH_PORT;
+    @Value("${elasticsearch.transport.port}")
+    private Integer SEARCH_TRANSPORT_PORT;
+
+    @Value("${elasticsearch.rest.port}")
+    private Integer SEARCH_REST_PORT;
 
 
     @Value("${elasticsearch.username}")
@@ -187,7 +202,7 @@ public class Config {
                 .put("request.headers.X-Found-Cluster", SEARCH_CLUSTERID)
                 .put("xpack.security.user", credentials)
                 .build());
-        client.addTransportAddress(new TransportAddress(InetAddress.getByName(SEARCH_HOST), SEARCH_PORT));
+        client.addTransportAddress(new TransportAddress(InetAddress.getByName(SEARCH_HOST), SEARCH_TRANSPORT_PORT));
 
         return client;
     }
@@ -214,6 +229,28 @@ public class Config {
         RestTemplate restTemplate = new RestTemplate(httpRequestFactory());
         restTemplate.setErrorHandler(new MoxomoResponseErrorHandler());
         return restTemplate;
+    }
+
+
+
+    @Bean(destroyMethod = "close")
+    public RestHighLevelClient restHighLevelClient(){
+
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(SEARCH_USERNAME, SEARCH_PASSWORD));
+
+        RestClientBuilder builder = RestClient.builder(new HttpHost(SEARCH_HOST, SEARCH_REST_PORT, HTTPS))
+                .setHttpClientConfigCallback(httpClientBuilder -> {
+                    try {
+                        return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider).setSSLContext(getDefault()).disableAuthCaching();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                        return  null;
+
+                    }
+                }).setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000));
+        return new RestHighLevelClient(builder);
     }
 
     @Bean
