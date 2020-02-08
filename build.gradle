@@ -2,7 +2,7 @@
 
 buildscript {
 	ext {
-		springBootVersion = '2.2.0.M4'
+		springBootVersion = '2.2.4'
 		//set('elasticsearch.version', '6.8.2')
 		
 
@@ -13,21 +13,19 @@ buildscript {
 			name 'elastic'
 			url 'https://artifacts.elastic.co/maven'
 		}
-		maven { url "http://repo.spring.io/libs-milestone" }
+		//maven { url "http://repo.spring.io/libs-milestone" }
 		
 		
 
 
 	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
+
 }
-
 
 
 plugins {
 	id 'com.google.cloud.tools.jib' version '1.4.0'
+	id 'org.springframework.boot' version '2.2.4.RELEASE'
 }
 jib.to.image = 'eu.gcr.io/moxomo/moxomo-service'
 jib.container.ports=['8080', '9090']
@@ -55,8 +53,6 @@ repositories {
 		name 'elastic'
 		url 'https://artifacts.elastic.co/maven'
 	}
-	maven { url "http://repo.spring.io/libs-milestone" }
-	maven { url "http://repo.spring.io/milestone" }
 }
 
 ext.libs = [

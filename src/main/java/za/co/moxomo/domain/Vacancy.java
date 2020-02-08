@@ -21,6 +21,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Document(indexName = "job_ads", type = "vacancy")
 @Data
+
 public class Vacancy {
 
     @Id

@@ -149,7 +149,6 @@ public class Nedbank {
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
             
 
-
             jobTitle = doc.title();
 
             logger.debug("job title {}", jobTitle);
